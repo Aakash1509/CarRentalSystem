@@ -1,1 +1,4 @@
-1)Can create a common interface for registration and can implement in Admin and Customer Class.Like registration and login will be abstract methods
+1)Can create a common interface for registration and can implement in admin and Customer Class.Like registration and login will be abstract methods
+2)Can create abstract class and keep method View Available Cars as it is common in both customers and admin (done)
+3)Need to create common arraylist (done)
+4)Use Singleton class for admin (done)
