@@ -45,7 +45,12 @@ public class Main
                     String customerUsername = scanner.nextLine();
                     System.out.print("Password: ");
                     String customerPassword = scanner.nextLine();
-                    customerReg = new CustomerDetails(customerUsername, customerPassword);
+
+                    System.out.println("Driver license number");
+
+                    String drivingLicenseNumber = scanner.nextLine();
+
+                    customerReg = new CustomerDetails(customerUsername, customerPassword, drivingLicenseNumber);
                     customerReg.registerCustomer(customerUsername, customerPassword);
                     break;
                 case 3:

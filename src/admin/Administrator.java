@@ -55,9 +55,11 @@ public class Administrator
 //        Admin newAdmin = new Admin(username,password);
         if (adminCredentials.isEmpty())
         {
-            adminCredentials.put(username, password); // Store username and password in HashMap
+            adminCredentials.put(username, password); // Store username and password in HashMap]
+
             System.out.println("admin " + username + " registered successfully!");
-        } else
+        }
+        else
         {
             System.out.println("An admin is already registered. Registration is not allowed");
         }
@@ -73,7 +75,9 @@ public class Administrator
 
             //After successful login , redirect to AdminMenu.java
             AdminDashboard adminDashboard = new AdminDashboard();
+
             adminDashboard.showMenu();
+
             return true;
         } else
         {

@@ -38,6 +38,11 @@ public class CarDetails
         return isAvailable;
     }
 
+    public void setAvailable(boolean available)
+    {
+        this.isAvailable = available;
+    }
+
     public double getBasePricePerDay()
     {
         return basePricePerDay;

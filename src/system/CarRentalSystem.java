@@ -20,7 +20,7 @@ public abstract class CarRentalSystem {
         System.out.println("\n============= Available Cars in inventory are ==============");
         for(CarDetails car : cars){
             if(car.isAvailable()){
-                System.out.println(car.getCarId()+" - "+car.getCarBrand()+" "+car.getCarModel());
+                System.out.println(car.getCarId()+" - "+car.getCarBrand()+" "+car.getCarModel()+ " "+car.getBasePricePerDay()+" (in $)");
             }
         }
     }

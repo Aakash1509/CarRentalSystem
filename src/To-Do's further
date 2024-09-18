@@ -2,3 +2,6 @@
 2)Can create abstract class and keep method View Available Cars as it is common in both customers and admin (done)
 3)Need to create common arraylist (done)
 4)Use Singleton class for admin (done)
+5)Need to add Exceptions
+6)Username must be unique , need to implement that feature in customers package
+7)If I try to login without registration , exception should be thrown
