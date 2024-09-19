@@ -23,7 +23,7 @@ public class Main
             System.out.print("Enter your choice: ");
 
             choice = scanner.nextInt();
-            scanner.nextLine();
+            scanner.nextLine(); //Need to handle exception
 
             switch (choice)
             {
@@ -46,7 +46,7 @@ public class Main
                     System.out.print("Password: ");
                     String customerPassword = scanner.nextLine();
 
-                    System.out.println("Driver license number");
+                    System.out.print("Driver license number: ");
 
                     String drivingLicenseNumber = scanner.nextLine();
 

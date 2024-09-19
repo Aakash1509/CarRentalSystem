@@ -25,5 +25,28 @@ public class RentalRecord
         this.totalCost = totalCost;
     }
 
+    public String getRentalId()
+    {
+        return rentalId;
+    }
 
+    public String getUsername()
+    {
+        return username;
+    }
+
+    public int getRentalDuration()
+    {
+        return rentalDuration;
+    }
+
+    public String getCarId()
+    {
+        return carId;
+    }
+
+    public double getTotalCost()
+    {
+        return totalCost;
+    }
 }

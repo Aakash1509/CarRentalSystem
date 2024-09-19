@@ -36,7 +36,7 @@ public class CustomerDetails
     {
 //        Guest newGuest = new Guest(username, password);
         customerCredentials.put(username, password); // Store username and password in HashMap
-        System.out.println("Customer" + username + " registered successfully!");
+        System.out.println("Customer " + username + " registered successfully!");
     }
 
     public boolean loginCustomer(String username, String password)

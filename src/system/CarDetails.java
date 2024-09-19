@@ -1,20 +1,29 @@
 package system;
 
 //Will be from Admin side
+
 public class CarDetails
 {
     private String carId;
+
     private String carBrand;
+
     private String carModel;
+
     private double basePricePerDay;
+
     private boolean isAvailable;
 
     public CarDetails(String carId, String carBrand, String carModel, double basePricePerDay)
     {
         this.carId = carId;
+
         this.carBrand = carBrand;
+
         this.carModel = carModel;
+
         this.basePricePerDay = basePricePerDay;
+
         this.isAvailable = true;
     }
 
@@ -46,21 +55,6 @@ public class CarDetails
     public double getBasePricePerDay()
     {
         return basePricePerDay;
-    }
-
-    public void rentCar()
-    {
-        isAvailable = false;
-    }
-
-    public void returnCar()
-    {
-        isAvailable = true;
-    }
-
-    public double calculateRentPrice(int rentalDays)
-    {
-        return basePricePerDay * rentalDays;
     }
 
     public void setCarId(String carId)

@@ -63,6 +63,8 @@ public class CustomerDashboard extends CarRentalSystem
 
             RentalRecord record = new RentalRecord("R" + (rentalRecords.size() + 1), customer.getUsername(), selectedCar.getCarId(), rentalDuration, totalCost);
 
+            //Adding rental record in arraylist
+
             rentalRecords.add(record);
 
             System.out.println("\nCar rented successfully...");
@@ -75,27 +77,138 @@ public class CustomerDashboard extends CarRentalSystem
 
             System.out.println("Rental Duration : " + rentalDuration + " days");
 
-            System.out.println("Total Cost: $" + totalCost);
-
-
+            System.out.println("Total Cost: $ " + totalCost);
         }
     }
 
     public void returnCar()
     {
+        var username = customer.getUsername();
 
+        boolean hasRentedCars = false;
+
+        for (RentalRecord record : rentalRecords)
+        {
+            if (record.getUsername().equals(username))
+            {
+                hasRentedCars = true;
+
+                break;
+            }
+        }
+
+        if (!hasRentedCars)
+        {
+            System.out.println("\nYou have not rented any cars...");
+
+            return;
+        }
+
+        //To display user's rented cars
+        viewRentedCars();
+
+        //Select which car to return based on Rental Id
+
+        System.out.print("\nEnter Rental Id of the car you want to return : ");
+
+        var rentalId = scanner.nextLine();
+
+        RentalRecord selectedRental = null;
+
+        for (RentalRecord record : rentalRecords)
+        {
+            if (record.getRentalId().equals(rentalId) && record.getUsername().equals(username))
+            {
+                selectedRental = record;
+            }
+        }
+
+        if (selectedRental==null)
+        {
+            System.out.println("Invalid Rental ID . Please try again");
+
+            return;
+        }
+
+        //Need to update Car status also
+
+        CarDetails rentedCar = findCarById(selectedRental.getCarId());
+
+        if (rentedCar!=null)
+        {
+            rentedCar.setAvailable(true);
+
+            System.out.println("Car returned successfully");
+
+            //Removing from rental records also
+
+            rentalRecords.remove(selectedRental);
+
+            System.out.println("Rental Id : " + selectedRental.getRentalId() + " has been successfully returned");
+        }
+        else
+        {
+            System.out.println("Unable to find the car associated with this rental.");
+        }
+
+
+    }
+
+    public void viewRentedCars()
+    {
+        var username = customer.getUsername();
+
+        System.out.println("\n=========== Rented Cars by : " + username + " ===========");
+
+        boolean hasRentedCars = false;
+
+        for (RentalRecord record : rentalRecords)
+        {
+            if (record.getUsername().equals(username))
+            {
+                CarDetails car = findCarById(record.getCarId());
+
+                if (car!=null)
+                {
+                    System.out.println("Rental Id : " + record.getRentalId());
+
+                    System.out.println("Car Rented : " + car.getCarBrand() + " " + car.getCarModel());
+
+                    System.out.println("Rental Duration : " + record.getRentalDuration());
+
+                    System.out.println("Total Cost : " + record.getTotalCost());
+
+                    System.out.println("-----------------------");
+
+                    hasRentedCars = true;
+                }
+
+            }
+        }
+
+        if (!hasRentedCars)
+        {
+            System.out.println("\nYou have not rented any cars");
+        }
+    }
+
+    private CarDetails findCarById(String carId)
+    {
+        for (CarDetails car : cars)
+        {
+            if (car.getCarId().equals(carId))
+            {
+                return car;
+            }
+        }
+        return null;
     }
 
     @Override
     public void showMenu()
     {
         int choice;
-        /*
-        CarDetails car1 = new CarDetails("C001","Ford","Mustang",1500);
-        CarDetails car2 = new CarDetails("C002","Mahindra","Thar",2000);
-        CarDetails car3 = new CarDetails("C003","Tata","Nexon",1500);
 
-         */
         do
         {
             System.out.println("\n====== Customer Menu ======");
@@ -114,25 +227,29 @@ public class CustomerDashboard extends CarRentalSystem
 
                 case 1:
                     rentCar();
+
                     break;
 
                 case 2:
                     returnCar();
+
                     break;
 
                 case 3:
                     viewAvailableCars();
-                    break;
-                    /*
-                case 4:
-                    viewRentedCars();
+
                     break;
 
-                     */
+                case 4:
+                    viewRentedCars();
+
+                    break;
 
                 case 5:
                     System.out.println("Logging out.");
+
                     break;
+
                 default:
                     System.out.println("Invalid choice, please try again.");
 
@@ -141,4 +258,6 @@ public class CustomerDashboard extends CarRentalSystem
         } while (choice!=5);
 
     }
+
+
 }

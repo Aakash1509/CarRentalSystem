@@ -2,6 +2,7 @@
 2)Can create abstract class and keep method View Available Cars as it is common in both customers and admin (done)
 3)Need to create common arraylist (done)
 4)Use Singleton class for admin (done)
-5)Need to add Exceptions
+5)Need to add Exceptions wherever input is taken
 6)Username must be unique , need to implement that feature in customers package
 7)If I try to login without registration , exception should be thrown
+8)If I removed a car, size will be decreased and if admin added a car , then case of car getting same rental id can arise , so better option to generate random rental record id.
