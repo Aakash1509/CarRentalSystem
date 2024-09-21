@@ -1,0 +1,185 @@
+package server;
+
+import admin.Administrator;
+import customers.CustomerDetails;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.ServerSocket;
+import java.net.Socket;
+
+public class Server {
+
+    // Main server socket
+    private ServerSocket serverSocket;
+
+    public Server() throws IOException {
+        serverSocket = new ServerSocket(9999); // Server listens on port 9999
+        System.out.println("Server is ready to accept connections");
+    }
+
+    // Start listening for client connections
+    public void start() throws IOException {
+        while (true) {
+            Socket clientSocket = serverSocket.accept(); // Accept each client connection
+            System.out.println("New client connected!");
+
+            // Create a new thread for each client
+            ClientHandler clientHandler = new ClientHandler(clientSocket);
+            new Thread(clientHandler).start(); // Start the thread to handle the client
+        }
+    }
+
+    public static void main(String[] args) throws IOException {
+        System.out.println("Starting the server...");
+        Server server = new Server(); // Initialize server
+        server.start(); // Start accepting clients
+    }
+
+    // ClientHandler class to manage each client in a separate thread
+    private static class ClientHandler implements Runnable {
+        private Socket clientSocket;
+        private BufferedReader readData;
+        private PrintWriter writeData;
+
+        // Admin and Customer instances for managing registration/login
+        private Administrator adminReg = Administrator.getInstance();  // Singleton admin object
+        private CustomerDetails customerReg;
+
+        public ClientHandler(Socket clientSocket) {
+            this.clientSocket = clientSocket;
+        }
+
+        @Override
+        public void run() {
+            try {
+                // Initialize input/output streams for the client
+                readData = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+                writeData = new PrintWriter(clientSocket.getOutputStream(), true);
+
+                // Handle client requests
+                listenForClientRequests();
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                // Ensure connection is closed when done
+                closeConnection();
+            }
+        }
+
+        private void listenForClientRequests() throws IOException {
+            int choice = 0;
+            do {
+                writeData.println("====== Welcome to Car Rental System ======");
+                writeData.println("1. Register Admin");
+                writeData.println("2. Register Customer");
+                writeData.println("3. Login Admin");
+                writeData.println("4. Login Customer");
+                writeData.println("5. Exit");
+                writeData.println("Enter your choice (1-5): ");
+
+                try {
+                    // Parse client input as an integer
+                    choice = Integer.parseInt(readData.readLine());
+                    handleClientRequest(choice);
+                } catch (NumberFormatException e) {
+                    writeData.println("Invalid input. Please enter a number between 1 and 5.");
+                }
+
+            } while (choice != 5); // Exit when client chooses option 5
+        }
+
+        private void handleClientRequest(int choice) throws IOException {
+            switch (choice) {
+                case 1: // Admin Registration
+                    writeData.println("Enter Admin Username: ");
+                    String adminUsername = readData.readLine();
+                    writeData.println("Enter Admin Password: ");
+                    String adminPassword = readData.readLine();
+
+                    if (!adminUsername.isEmpty() && !adminPassword.isEmpty()) {
+                        adminReg.registerAdmin(adminUsername, adminPassword);
+                        writeData.println("Admin registered successfully.");
+                    } else {
+                        writeData.println("Fields cannot be empty. Please try again.");
+                    }
+                    break;
+
+                case 2: // Customer Registration
+                    writeData.println("Enter Customer Username: ");
+                    String customerUsername = readData.readLine();
+                    writeData.println("Enter Customer Password: ");
+                    String customerPassword = readData.readLine();
+                    writeData.println("Enter Driver's License Number: ");
+                    String drivingLicenseNumber = readData.readLine();
+
+                    if (!customerUsername.isEmpty() && !customerPassword.isEmpty() && !drivingLicenseNumber.isEmpty()) {
+                        customerReg = new CustomerDetails(customerUsername, customerPassword, drivingLicenseNumber);
+                        customerReg.registerCustomer(customerUsername, customerPassword);
+                        writeData.println("Customer registered successfully.");
+                    } else {
+                        writeData.println("Fields cannot be empty. Please try again.");
+                    }
+                    break;
+
+                case 3: // Admin Login
+                    writeData.println("Enter Admin Username: ");
+                    String adminLoginUsername = readData.readLine();
+                    writeData.println("Enter Admin Password: ");
+                    String adminLoginPassword = readData.readLine();
+
+                    try {
+                        if (!adminLoginUsername.isEmpty() && !adminLoginPassword.isEmpty()) {
+                            adminReg.loginAdmin(adminLoginUsername, adminLoginPassword);
+                            writeData.println("Admin logged in successfully.");
+                        } else {
+                            writeData.println("Fields cannot be empty. Please try again.");
+                        }
+                    } catch (Exception e) {
+                        writeData.println("Login failed. Please register first.");
+                    }
+                    break;
+
+                case 4: // Customer Login
+                    writeData.println("Enter Customer Username: ");
+                    String customerLoginUsername = readData.readLine();
+                    writeData.println("Enter Customer Password: ");
+                    String customerLoginPassword = readData.readLine();
+
+                    try {
+                        if (!customerLoginUsername.isEmpty() && !customerLoginPassword.isEmpty()) {
+                            customerReg.loginCustomer(customerLoginUsername, customerLoginPassword);
+                            writeData.println("Customer logged in successfully.");
+                        } else {
+                            writeData.println("Fields cannot be empty. Please try again.");
+                        }
+                    } catch (Exception e) {
+                        writeData.println("Login failed. Please register first.");
+                    }
+                    break;
+
+                case 5: // Exit
+                    writeData.println("Exiting system. Goodbye!");
+                    break;
+
+                default:
+                    writeData.println("Invalid choice. Please try again.");
+                    break;
+            }
+        }
+
+        private void closeConnection() {
+            try {
+                if (readData != null) readData.close();
+                if (writeData != null) writeData.close();
+                if (clientSocket != null) clientSocket.close();
+                System.out.println("Connection closed with client.");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+}

@@ -1,5 +1,7 @@
 package customers;
 
+import java.io.BufferedReader;
+import java.io.PrintWriter;
 import java.util.HashMap;
 
 public class CustomerDetails
@@ -7,7 +9,10 @@ public class CustomerDetails
     private String username;
     private String password;
     private String drivingLicenseNumber;
-    private HashMap<String, String> customerCredentials = new HashMap<>();
+
+    //Made it static so that every object shares it
+
+    private static HashMap<String, String> customerCredentials = new HashMap<>();
 
     public CustomerDetails(String username, String password, String drivingLicenseNumber)
     {
@@ -32,30 +37,46 @@ public class CustomerDetails
         return drivingLicenseNumber;
     }
 
-    public void registerCustomer(String username, String password)
+    public void registerCustomer(String username, String password, PrintWriter writeData)
     {
 //        Guest newGuest = new Guest(username, password);
-        customerCredentials.put(username, password); // Store username and password in HashMap
-        System.out.println("Customer " + username + " registered successfully!");
+
+        //Logic to check : is username unique or not
+//        System.out.println(customerCredentials.size());
+
+        if (!customerCredentials.containsKey(username))
+        {
+            customerCredentials.put(username, password); // Store username and password in HashMap
+
+            writeData.println("Customer " + username + " registered successfully!");
+        }
+        else
+        {
+            writeData.println("This username already exists. Please register using other username");
+        }
+
     }
 
-    public boolean loginCustomer(String username, String password)
+    public boolean loginCustomer(String username, String password , PrintWriter writeData, BufferedReader readData)
     {
         if (customerCredentials.containsKey(username) && customerCredentials.get(username).equals(password))
         {
-            System.out.println("Login successful! Welcome, " + username);
+            writeData.println("Login successful! Welcome, " + username);
 
             //Need to create object of Customer Details as I need username in Customer Dashboard
-            CustomerDetails customer = new CustomerDetails(username,password,drivingLicenseNumber);
+            CustomerDetails customer = new CustomerDetails(username, password, drivingLicenseNumber);
 
             //After successful login , redirect to CustomerMenu.java
             CustomerDashboard customerDashboard = new CustomerDashboard(customer);
-            customerDashboard.showMenu();
+
+            customerDashboard.showMenu(writeData, readData);
+
             return true;
         }
         else
         {
             System.out.println("Invalid username or password.");
+
             return false;
         }
     }

@@ -1,9 +1,10 @@
 package customers;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
-
 import system.CarDetails;
 import system.CarRentalSystem;
 
@@ -13,20 +14,22 @@ public class CustomerDashboard extends CarRentalSystem
 
     private CustomerDetails customer;
 
-    private Scanner scanner = new Scanner(System.in);
+//    private Scanner scanner = new Scanner(System.in);
 
     public CustomerDashboard(CustomerDetails customer)
     {
         this.customer = customer;
     }
 
-    public void rentCar()
+    public void rentCar(PrintWriter writeData, BufferedReader readData) throws IOException
     {
-        viewAvailableCars();
+        viewAvailableCars(writeData);
 
-        System.out.print("\nEnter Car Id to rent : ");
+        writeData.println("\nEnter Car Id to rent: ");
 
-        String carId = scanner.nextLine();
+        writeData.flush();
+
+        var carId = readData.readLine();
 
         CarDetails selectedCar = null;
 
@@ -44,16 +47,19 @@ public class CustomerDashboard extends CarRentalSystem
 
         if (selectedCar==null)
         {
-            System.out.println("Car is not available or invalid car ID");
-        } else
+            writeData.println("Car is not available or invalid car ID");
+        }
+        else
         {
-            System.out.print("Enter rental duration (in days) : ");
+            writeData.println("Enter rental duration (in days) : ");
 
-            int rentalDuration = scanner.nextInt();
+            writeData.flush();
+
+            var rentalDuration = Integer.parseInt(readData.readLine());
 
             //Total Cost
 
-            double totalCost = rentalDuration * selectedCar.getBasePricePerDay();
+            var totalCost = rentalDuration * selectedCar.getBasePricePerDay();
 
             //Mark the car as rented
 
@@ -71,20 +77,23 @@ public class CustomerDashboard extends CarRentalSystem
 
             //Displaying Car Details
 
-            System.out.println("Rental Details : ");
+            writeData.println("Rental Details :");
 
-            System.out.println("Car : " + selectedCar.getCarBrand() + " " + selectedCar.getCarModel());
+            writeData.println("Car :" + selectedCar.getCarBrand() + " " + selectedCar.getCarModel());
 
-            System.out.println("Rental Duration : " + rentalDuration + " days");
+            writeData.println("Rental Duration :" + rentalDuration + " days");
 
-            System.out.println("Total Cost: $ " + totalCost);
+            writeData.println("Total Cost: $ " + totalCost);
+
+            writeData.flush();
         }
     }
 
-    public void returnCar()
+    public void returnCar(PrintWriter writeData, BufferedReader readData) throws IOException
     {
         var username = customer.getUsername();
 
+        /* boolean hasRentedCars = rentalRecords.stream().anyMatch(record -> record.getUsername().equals(username));*/
         boolean hasRentedCars = false;
 
         for (RentalRecord record : rentalRecords)
@@ -96,24 +105,30 @@ public class CustomerDashboard extends CarRentalSystem
                 break;
             }
         }
-
         if (!hasRentedCars)
         {
-            System.out.println("\nYou have not rented any cars...");
+            writeData.println("\nYou have not rented any cars...");
 
             return;
         }
-
         //To display user's rented cars
-        viewRentedCars();
+        viewRentedCars(writeData);
 
         //Select which car to return based on Rental Id
 
-        System.out.print("\nEnter Rental Id of the car you want to return : ");
+        writeData.println("\nEnter Rental Id of the car you want to return : ");
 
-        var rentalId = scanner.nextLine();
+        writeData.flush();
+
+        var rentalId = readData.readLine();
 
         RentalRecord selectedRental = null;
+
+        /*Using streamAPI
+         RentalRecord selectedRental = rentalRecords.stream()
+                .filter(record -> record.getRentalId().equals(rentalId) && record.getUsername().equals(username))
+                .findFirst().orElse(null);
+         */
 
         for (RentalRecord record : rentalRecords)
         {
@@ -125,7 +140,7 @@ public class CustomerDashboard extends CarRentalSystem
 
         if (selectedRental==null)
         {
-            System.out.println("Invalid Rental ID . Please try again");
+            writeData.println("Invalid Rental ID . Please try again");
 
             return;
         }
@@ -138,27 +153,29 @@ public class CustomerDashboard extends CarRentalSystem
         {
             rentedCar.setAvailable(true);
 
-            System.out.println("Car returned successfully");
+            writeData.println("Car returned successfully");
 
             //Removing from rental records also
 
             rentalRecords.remove(selectedRental);
 
-            System.out.println("Rental Id : " + selectedRental.getRentalId() + " has been successfully returned");
+            writeData.println("Rental Id : " + selectedRental.getRentalId() + " has been successfully returned");
+
+            writeData.flush();
         }
         else
         {
-            System.out.println("Unable to find the car associated with this rental.");
+            writeData.println("Unable to find the car associated with this rental.");
         }
-
-
     }
 
-    public void viewRentedCars()
+    public void viewRentedCars(PrintWriter writeData)
     {
         var username = customer.getUsername();
 
-        System.out.println("\n=========== Rented Cars by : " + username + " ===========");
+        writeData.println("\n=========== Rented Cars by : " + username + " ===========");
+
+        writeData.flush();
 
         boolean hasRentedCars = false;
 
@@ -170,26 +187,26 @@ public class CustomerDashboard extends CarRentalSystem
 
                 if (car!=null)
                 {
-                    System.out.println("Rental Id : " + record.getRentalId());
+                    writeData.println("Rental Id :" + record.getRentalId());
 
-                    System.out.println("Car Rented : " + car.getCarBrand() + " " + car.getCarModel());
+                    writeData.println("Car Rented :" + car.getCarBrand() + " " + car.getCarModel());
 
-                    System.out.println("Rental Duration : " + record.getRentalDuration());
+                    writeData.println("Rental Duration :" + record.getRentalDuration());
 
-                    System.out.println("Total Cost : " + record.getTotalCost());
+                    writeData.println("Total Cost :" + record.getTotalCost());
 
-                    System.out.println("-----------------------");
+                    writeData.println("-----------------------");
 
                     hasRentedCars = true;
                 }
 
             }
         }
-
         if (!hasRentedCars)
         {
-            System.out.println("\nYou have not rented any cars");
+            writeData.println("\nYou have not rented any cars");
         }
+        writeData.flush();
     }
 
     private CarDetails findCarById(String carId)
@@ -205,59 +222,66 @@ public class CustomerDashboard extends CarRentalSystem
     }
 
     @Override
-    public void showMenu()
+    public void showMenu(PrintWriter writeData, BufferedReader readData)
     {
-        int choice;
+        int choice = 0;
 
         do
         {
-            System.out.println("\n====== Customer Menu ======");
-            System.out.println("1. Rent a Car");
-            System.out.println("2. Return a Car");
-            System.out.println("3. View Available Cars");
-            System.out.println("4. View Rented Cars");
-            System.out.println("5. Logout");
-            System.out.print("Enter your choice: ");
+            writeData.println("\n====== Customer Menu ======");
 
-            choice = scanner.nextInt();
-            scanner.nextLine(); // consume newline
+            writeData.println("1. Rent a Car");
 
-            switch (choice)
+            writeData.println("2. Return a Car");
+
+            writeData.println("3. View Available Cars");
+
+            writeData.println("4. View Rented Cars");
+
+            writeData.println("5. Logout");
+
+            writeData.println("Enter your choice: ");
+
+            try
             {
+                choice = Integer.parseInt(readData.readLine());
 
-                case 1:
-                    rentCar();
+                switch (choice)
+                {
 
-                    break;
+                    case 1:
+                        rentCar(writeData, readData);
 
-                case 2:
-                    returnCar();
+                        break;
 
-                    break;
+                    case 2:
+                        returnCar(writeData, readData);
 
-                case 3:
-                    viewAvailableCars();
+                        break;
 
-                    break;
+                    case 3:
+                        viewAvailableCars(writeData);
 
-                case 4:
-                    viewRentedCars();
+                        break;
 
-                    break;
+                    case 4:
+                        viewRentedCars(writeData);
 
-                case 5:
-                    System.out.println("Logging out.");
+                        break;
 
-                    break;
+                    case 5:
+                        writeData.println("Logging out.");
 
-                default:
-                    System.out.println("Invalid choice, please try again.");
+                        break;
 
+                    default:
+                        writeData.println("Invalid choice, please try again.");
+                }
             }
-
+            catch (Exception e)
+            {
+                writeData.println("Invalid data...Please enter a number between 1 to 5");
+            }
         } while (choice!=5);
-
     }
-
-
 }
