@@ -11,34 +11,36 @@ import system.CarDetails;
 
 public class AdminDashboard extends CarRentalSystem
 {
-
-//    private Scanner scanner = new Scanner(System.in);
-
-//    private List<CarDetails>cars = new ArrayList<>();
-
-//    AdminMenu adminMenu = new AdminMenu();
-
-    /*
-
-    Optional to add in ArrayList via function
-
-    public void addCar(CarDetails car){
-
-        cars.add(car);
-
-    }
-
-     */
-
-    public void addCar(PrintWriter writeData, BufferedReader readData) throws IOException
+    public synchronized void addCar(PrintWriter writeData, BufferedReader readData) throws IOException
     {
         writeData.println("\nFill up following details to add a car\nEnter Car ID: ");
 
         writeData.flush();
 
-//        System.out.print("Enter Car ID: ");
-
         var carId = readData.readLine();
+
+        //Check if carId already exists
+
+        boolean carExists = false;
+
+        for(CarDetails car : cars)
+        {
+            if(car.getCarId().equals(carId))
+            {
+                carExists = true;
+
+                break;
+            }
+        }
+
+        if(carExists)
+        {
+            writeData.println("\nCar with this ID already exists. Please try again with another ID");
+
+            writeData.flush();
+
+            return;
+        }
 
         writeData.println("Brand: ");
 
@@ -56,9 +58,31 @@ public class AdminDashboard extends CarRentalSystem
 
         writeData.flush();
 
-        var basePricePerDay = Double.parseDouble(readData.readLine());
+        var basePricePerDay = readData.readLine();
 
-        CarDetails car = new CarDetails(carId, carBrand, carModel, basePricePerDay);
+        if(carId.isEmpty() || carBrand.isEmpty() || carModel.isEmpty() || basePricePerDay.isEmpty())
+        {
+            writeData.println("\nPlease fill up all the required details to add the car..");
+
+            return;
+        }
+
+        // Validate base price is a number
+        double basePrice;
+
+        try
+        {
+            basePrice = Double.parseDouble(basePricePerDay);
+        }
+        catch (NumberFormatException e)
+        {
+            writeData.println("\nInvalid input for Base Price Per Day. Please enter a valid number.");
+
+            writeData.flush();
+            return;
+        }
+
+        CarDetails car = new CarDetails(carId, carBrand, carModel, basePrice);
 
         cars.add(car);
 
@@ -67,7 +91,7 @@ public class AdminDashboard extends CarRentalSystem
         writeData.flush();
     }
 
-    public void removeCar(PrintWriter writeData, BufferedReader readData) throws IOException
+    public synchronized void removeCar(PrintWriter writeData, BufferedReader readData) throws IOException
     {
         writeData.println("\nEnter the Id of the car you want to remove :\nEnter Car ID: ");
 
@@ -89,8 +113,16 @@ public class AdminDashboard extends CarRentalSystem
 
             // Check if the car is available and matches the ID
 
-            if (car.isAvailable() && Objects.equals(car.getCarId(), carId))
+            if (Objects.equals(car.getCarId(), carId))
             {
+                if(!car.isAvailable())
+                {
+                    writeData.println("Cannot remove car with ID "+ carId + " because car is currently rented");
+
+                    carRemoved = true;
+
+                    break;
+                }
                 iterator.remove(); // Use iterator's remove method to safely remove the car
 
                 writeData.println("\nCar with ID " + carId + " removed successfully.");
@@ -107,29 +139,6 @@ public class AdminDashboard extends CarRentalSystem
         writeData.flush();
     }
 
-    /*
-
-    public void viewAvailableCars(){
-
-        System.out.println("\n============= Available Cars in inventory are ==============");
-
-        for(CarDetails car : cars){
-
-            if(car.isAvailable()){
-
-                System.out.println(car.getCarId()+" - "+car.getCarBrand()+" "+car.getCarModel());
-
-            }
-
-        }
-
-    }
-
-
-
-     */
-
-
     public void viewRentedCars(PrintWriter writeData)
     {
         writeData.println("\n============= Rented Cars are ==============");
@@ -144,7 +153,7 @@ public class AdminDashboard extends CarRentalSystem
             {
                 flag = true;
 
-                writeData.println(car.getCarId() + " - " + car.getCarBrand() + " " + car.getCarModel());
+                writeData.println(car.getCarId() + " - " + car.getCarBrand() + " " + car.getCarModel() + " is rented by "+ car.getRentedBy());
             }
         }
         if (!flag)
@@ -154,13 +163,11 @@ public class AdminDashboard extends CarRentalSystem
         writeData.flush();
     }
 
-    public void updateCarDetails(PrintWriter writeData, BufferedReader readData) throws IOException
+    public synchronized void updateCarDetails(PrintWriter writeData, BufferedReader readData) throws IOException
     {
         writeData.println("\nEnter the ID of the car you want to update :\nCar ID: ");
 
         writeData.flush();
-
-//        System.out.print("Car ID : ");
 
         var toUpdateCarId = readData.readLine();
 
@@ -170,6 +177,14 @@ public class AdminDashboard extends CarRentalSystem
         {
             if (Objects.equals(car.getCarId(), toUpdateCarId))
             {
+                if(!car.isAvailable())
+                {
+                    writeData.println("Cannot update car details with ID "+ toUpdateCarId + " because car is currently rented");
+
+                    carFound = true;
+
+                    break;
+                }
                 carFound = true;
 
                 //Displaying current car details
@@ -243,30 +258,6 @@ public class AdminDashboard extends CarRentalSystem
     {
         int choice = 0;
 
-        /*
-
-        CarDetails car1 = new CarDetails("C001","Ford","Mustang",1500);
-
-        CarDetails car2 = new CarDetails("C002","Mahindra","Thar",2000);
-
-        CarDetails car3 = new CarDetails("C003","Tata","Nexon",1500);
-
-        cars.add(car1);
-
-        cars.add(car2);
-
-        cars.add(car3);
-
-
-
-         */
-
-//        addCar(car1);
-
-//        addCar(car2);
-
-//        addCar(car3);
-
         do
         {
             writeData.println("\n====== Admin Menu ======");
@@ -285,43 +276,39 @@ public class AdminDashboard extends CarRentalSystem
 
             writeData.println("Enter your choice: ");
 
+            writeData.flush();
+
             try{
                 choice = Integer.parseInt(readData.readLine());
 
                 switch (choice)
                 {
                     case 1:
-
                         addCar(writeData, readData);
 
                         break;
 
                     case 2:
-
                         removeCar(writeData, readData);
 
                         break;
 
                     case 3:
-
                         updateCarDetails(writeData, readData);
 
                         break;
 
                     case 4:
-
                         viewAvailableCars(writeData);
 
                         break;
 
                     case 5:
-
                         viewRentedCars(writeData);
 
                         break;
 
                     case 6:
-
                         writeData.println("Logging out.");
 
                         writeData.flush();
@@ -329,11 +316,9 @@ public class AdminDashboard extends CarRentalSystem
                         break;
 
                     default:
-
                         writeData.println("Invalid choice, please try again.");
 
                         writeData.flush();
-
                 }
             }
             catch (Exception e)

@@ -7,10 +7,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 //Created abstract class as ArrayList of cars will be shared by both admin and user and menu method can also be override
-public abstract class CarRentalSystem {
-    protected List<CarDetails>cars = new ArrayList<>();
+public abstract class CarRentalSystem
+{
+    //Made it static so both admin and customers share it
+    protected static List<CarDetails> cars = new ArrayList<>();
 
-    //Instance Initializer block (cars.add() method should not be outside any method or block)
+    //Initializer block (cars.add() method should not be outside any method or block)
+    static
     {
         CarDetails car1 = new CarDetails("C001", "Ford", "Mustang", 1500);
 
@@ -53,12 +56,27 @@ public abstract class CarRentalSystem {
         cars.add(car10);
 
     }
-    public void viewAvailableCars(PrintWriter writeData){
+
+    //Synchronized so that when one thread is iterating other thread doesn't modify
+    public synchronized void viewAvailableCars(PrintWriter writeData)
+    {
         writeData.println("\n============= Available Cars in inventory are ==============");
-        for(CarDetails car : cars){
-            if(car.isAvailable()){
-                writeData.println(car.getCarId()+" - "+car.getCarBrand()+" "+car.getCarModel()+ " "+car.getBasePricePerDay()+" (in $)");
+
+        boolean hasAvailableCars = false;
+
+        for (CarDetails car : cars)
+        {
+            if (car.isAvailable())
+            {
+                hasAvailableCars = true;
+
+                writeData.println(car.getCarId() + " - " + car.getCarBrand() + " " + car.getCarModel() + " " + car.getBasePricePerDay() + " ($/day)");
             }
+        }
+
+        if(!hasAvailableCars)
+        {
+            writeData.println("No cars available at the moment");
         }
         writeData.flush();
     }

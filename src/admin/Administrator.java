@@ -35,7 +35,7 @@ public class Administrator
 
     //Public static method to provide single instance
 
-    public static Administrator getInstance()
+    public static synchronized Administrator getInstance()
     {
         if (instance==null)
         {
@@ -54,7 +54,7 @@ public class Administrator
         return password;
     }
 
-    public void registerAdmin(String username, String password, PrintWriter writeData)
+    public synchronized void registerAdmin(String username, String password, PrintWriter writeData)
     {
 //        Admin newAdmin = new Admin(username,password);
         if (adminCredentials.isEmpty())
@@ -70,7 +70,7 @@ public class Administrator
 
     }
 
-    public boolean loginAdmin(String username, String password, PrintWriter writeData, BufferedReader readData) throws IOException
+    public synchronized boolean loginAdmin(String username, String password, PrintWriter writeData, BufferedReader readData) throws IOException
     {
         if (adminCredentials.containsKey(username) && adminCredentials.get(username).equals(password))
         {

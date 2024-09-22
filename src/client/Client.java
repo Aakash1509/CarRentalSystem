@@ -76,6 +76,12 @@ public class Client
                     serverOutput.println(userInputString);
 
                     serverOutput.flush();
+
+                    // If client types "exit", break the loop
+                    if (userInputString.equalsIgnoreCase("exit"))
+                    {
+                        break;
+                    }
                 }
             }
 

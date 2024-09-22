@@ -5,12 +5,17 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import system.CarDetails;
 import system.CarRentalSystem;
 
 public class CustomerDashboard extends CarRentalSystem
 {
-    List<RentalRecord> rentalRecords = new ArrayList<>();
+    //To keep rental Id thread safe
+    private static final AtomicInteger rentalIdCounter = new AtomicInteger(0);
+
+    private List<RentalRecord> rentalRecords = new ArrayList<>();
 
     private CustomerDetails customer;
 
@@ -21,7 +26,7 @@ public class CustomerDashboard extends CarRentalSystem
         this.customer = customer;
     }
 
-    public void rentCar(PrintWriter writeData, BufferedReader readData) throws IOException
+    public synchronized void rentCar(PrintWriter writeData, BufferedReader readData) throws IOException
     {
         viewAvailableCars(writeData);
 
@@ -40,6 +45,8 @@ public class CustomerDashboard extends CarRentalSystem
             if (car.getCarId().equals(carId) && car.isAvailable())
             {
                 selectedCar = car;
+
+                car.setRentedBy(customer.getUsername());
 
                 break;
             }
@@ -65,15 +72,19 @@ public class CustomerDashboard extends CarRentalSystem
 
             selectedCar.setAvailable(false);
 
+            //Generating Rental ID
+
+            var rentalId = "R" + rentalIdCounter.incrementAndGet();
+
             //Create object of RentalRecord class
 
-            RentalRecord record = new RentalRecord("R" + (rentalRecords.size() + 1), customer.getUsername(), selectedCar.getCarId(), rentalDuration, totalCost);
+            RentalRecord record = new RentalRecord(rentalId, customer.getUsername(), selectedCar.getCarId(), rentalDuration, totalCost);
 
             //Adding rental record in arraylist
 
             rentalRecords.add(record);
 
-            System.out.println("\nCar rented successfully...");
+            writeData.println("\nCar rented successfully...");
 
             //Displaying Car Details
 
@@ -89,7 +100,7 @@ public class CustomerDashboard extends CarRentalSystem
         }
     }
 
-    public void returnCar(PrintWriter writeData, BufferedReader readData) throws IOException
+    public synchronized void returnCar(PrintWriter writeData, BufferedReader readData) throws IOException
     {
         var username = customer.getUsername();
 
@@ -169,7 +180,7 @@ public class CustomerDashboard extends CarRentalSystem
         }
     }
 
-    public void viewRentedCars(PrintWriter writeData)
+    public synchronized void viewRentedCars(PrintWriter writeData)
     {
         var username = customer.getUsername();
 

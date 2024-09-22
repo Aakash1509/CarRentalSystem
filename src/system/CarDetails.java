@@ -14,6 +14,8 @@ public class CarDetails
 
     private boolean isAvailable;
 
+    private String rentedBy;
+
     public CarDetails(String carId, String carBrand, String carModel, double basePricePerDay)
     {
         this.carId = carId;
@@ -25,6 +27,8 @@ public class CarDetails
         this.basePricePerDay = basePricePerDay;
 
         this.isAvailable = true;
+
+        this.rentedBy = null;
     }
 
     public String getCarId()
@@ -47,7 +51,14 @@ public class CarDetails
         return isAvailable;
     }
 
-    public void setAvailable(boolean available)
+    public String getRentedBy()
+    {
+        return rentedBy;
+    }
+
+    //Only this function synchronized as this will be accessed by multiple clients
+
+    public synchronized void setAvailable(boolean available)
     {
         this.isAvailable = available;
     }
@@ -75,5 +86,10 @@ public class CarDetails
     public void setBasePricePerDay(double basePricePerDay)
     {
         this.basePricePerDay = basePricePerDay;
+    }
+
+    public void setRentedBy(String username)
+    {
+        this.rentedBy = username;
     }
 }

@@ -37,7 +37,7 @@ public class CustomerDetails
         return drivingLicenseNumber;
     }
 
-    public void registerCustomer(String username, String password, PrintWriter writeData)
+    public synchronized void registerCustomer(String username, String password, PrintWriter writeData)
     {
 //        Guest newGuest = new Guest(username, password);
 
@@ -57,7 +57,7 @@ public class CustomerDetails
 
     }
 
-    public boolean loginCustomer(String username, String password , PrintWriter writeData, BufferedReader readData)
+    public synchronized boolean loginCustomer(String username, String password , PrintWriter writeData, BufferedReader readData)
     {
         if (customerCredentials.containsKey(username) && customerCredentials.get(username).equals(password))
         {
@@ -75,7 +75,7 @@ public class CustomerDetails
         }
         else
         {
-            System.out.println("Invalid username or password.");
+            writeData.println("Invalid username or password.");
 
             return false;
         }
