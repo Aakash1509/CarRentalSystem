@@ -97,8 +97,6 @@ public class AdminDashboard extends CarRentalSystem
 
         writeData.flush();
 
-//        System.out.print("Enter Car ID: ");
-
         var carId = readData.readLine();
 
         //Cannot use forEach loop because it will throw ConcurrentModificationException , so need to use iterator
@@ -254,7 +252,7 @@ public class AdminDashboard extends CarRentalSystem
 
     @Override
 
-    public void showMenu(PrintWriter writeData, BufferedReader readData) throws IOException
+    public void showMenu(PrintWriter writeData, BufferedReader readData)
     {
         int choice = 0;
 

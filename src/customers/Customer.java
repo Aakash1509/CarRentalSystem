@@ -4,20 +4,24 @@ import java.io.BufferedReader;
 import java.io.PrintWriter;
 import java.util.HashMap;
 
-public class CustomerDetails
+public class Customer
 {
-    private String username;
-    private String password;
-    private String drivingLicenseNumber;
+    private final String username;
+
+    private final String password;
+
+    private final String drivingLicenseNumber;
 
     //Made it static so that every object shares it
 
-    private static HashMap<String, String> customerCredentials = new HashMap<>();
+    private static final HashMap<String, String> customerCredentials = new HashMap<>();
 
-    public CustomerDetails(String username, String password, String drivingLicenseNumber)
+    public Customer(String username, String password, String drivingLicenseNumber)
     {
         this.username = username;
+
         this.password = password;
+
         this.drivingLicenseNumber = drivingLicenseNumber;
     }
 
@@ -39,10 +43,7 @@ public class CustomerDetails
 
     public synchronized void registerCustomer(String username, String password, PrintWriter writeData)
     {
-//        Guest newGuest = new Guest(username, password);
-
         //Logic to check : is username unique or not
-//        System.out.println(customerCredentials.size());
 
         if (!customerCredentials.containsKey(username))
         {
@@ -64,9 +65,9 @@ public class CustomerDetails
             writeData.println("Login successful! Welcome, " + username);
 
             //Need to create object of Customer Details as I need username in Customer Dashboard
-            CustomerDetails customer = new CustomerDetails(username, password, drivingLicenseNumber);
+            Customer customer = new Customer(username, password, drivingLicenseNumber);
 
-            //After successful login , redirect to CustomerMenu.java
+            //After successful login , redirect to CustomerDashboard.java
             CustomerDashboard customerDashboard = new CustomerDashboard(customer);
 
             customerDashboard.showMenu(writeData, readData);

@@ -80,5 +80,6 @@ public abstract class CarRentalSystem
         }
         writeData.flush();
     }
+
     public abstract void showMenu(PrintWriter writeData, BufferedReader readData) throws IOException;
 }

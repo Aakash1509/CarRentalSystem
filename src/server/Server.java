@@ -11,9 +11,9 @@ import java.util.concurrent.Executors;
 //This will replace Main.java
 public class Server
 {
-    private ServerSocket serverSocket; //for server
+    private final ServerSocket serverSocket; //for server
 
-    private ExecutorService executorService; //Thread pool
+    private final ExecutorService executorService; //Thread pool
 
     public Server() throws IOException
     {
@@ -27,13 +27,24 @@ public class Server
 
     }
 
-    public void start() throws IOException
+    public void start()
     {
         while (true)
         {
-            Socket clientSocket = serverSocket.accept(); //Accept each client connection
+            try
+            {
+                Socket clientSocket = serverSocket.accept(); //Accept each client connection
 
-            System.out.println("New client connected");
+                System.out.println("New client connected");
+
+                //Submitting task to thread pool
+
+                executorService.submit(new ClientHandler(clientSocket));
+            }
+            catch (Exception e)
+            {
+                System.out.println("An error occurred" + e.getMessage());
+            }
 
             /*Creating new thread for each client (Without thread pool)
 
@@ -42,17 +53,23 @@ public class Server
             new Thread(clientHandler).start(); //Start the thread to handle the client
 
              */
-
-            //Submitting task to thread pool
-
-            executorService.submit(new ClientHandler(clientSocket));
         }
     }
 
-    public static void main(String[] args) throws IOException
+    public static void main(String[] args)
     {
         System.out.println("This is server...Server is going to start");
-        Server server = new Server();
-        server.start();
+
+        try
+        {
+            Server server = new Server();
+
+            server.start();
+        }
+        catch (IOException e)
+        {
+            System.out.println("An error occurred during starting the server : "+e.getMessage());
+        }
+
     }
 }

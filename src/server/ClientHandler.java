@@ -1,7 +1,7 @@
 package server;
 
 import admin.Administrator;
-import customers.CustomerDetails;
+import customers.Customer;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -12,7 +12,7 @@ import java.net.Socket;
 public class ClientHandler implements Runnable
 {
     //for client
-    private Socket clientSocket;
+    private final Socket clientSocket;
 
     //To read data
     private BufferedReader readData;
@@ -21,10 +21,10 @@ public class ClientHandler implements Runnable
     private PrintWriter writeData;
 
     //For Admin
-    Administrator adminReg = Administrator.getInstance();
+    Administrator admin = Administrator.getInstance();
 
     //For Customer
-    CustomerDetails customerReg;
+    Customer customer;
 
     public ClientHandler(Socket clientSocket)
     {
@@ -90,6 +90,10 @@ public class ClientHandler implements Runnable
 
     private void handleClientRequest(int choice) throws IOException
     {
+        var username = "";
+
+        var password = "";
+
         switch (choice)
         {
             case 1:
@@ -102,21 +106,21 @@ public class ClientHandler implements Runnable
 //
 //                writeData.flush();
 
-                var adminUsername = readData.readLine();
+                username = readData.readLine();
 
                 writeData.println("Password: ");
 
                 writeData.flush();
 
-                var adminPassword = readData.readLine();
+                password = readData.readLine();
 
-                if (!adminUsername.isEmpty() && !adminPassword.isEmpty())
+                if (!username.isEmpty() && !password.isEmpty())
                 {
                     synchronized (Administrator.class)
                     {
-                        adminReg = Administrator.getInstance();
+                        admin = Administrator.getInstance();
 
-                        adminReg.registerAdmin(adminUsername, adminPassword, writeData);
+                        admin.registerAdmin(username, password, writeData);
                     }
                 }
                 else
@@ -128,18 +132,18 @@ public class ClientHandler implements Runnable
                 break;
 
             case 2:
-                // Guest Registration
+                // Customer Registration
                 writeData.println("Enter Customer Details:\nUsername: ");
 
                 writeData.flush();
 
-                var customerUsername = readData.readLine();
+                username = readData.readLine();
 
                 writeData.println("Password: ");
 
                 writeData.flush();
 
-                var customerPassword = readData.readLine();
+                password = readData.readLine();
 
                 writeData.println("Driver license number: ");
 
@@ -147,11 +151,11 @@ public class ClientHandler implements Runnable
 
                 var drivingLicenseNumber = readData.readLine();
 
-                if (!customerUsername.isEmpty() && !customerPassword.isEmpty() && !drivingLicenseNumber.isEmpty())
+                if (!username.isEmpty() && !password.isEmpty() && !drivingLicenseNumber.isEmpty())
                 {
-                    customerReg = new CustomerDetails(customerUsername, customerPassword, drivingLicenseNumber);
+                    customer = new Customer(username, password, drivingLicenseNumber);
 
-                    customerReg.registerCustomer(customerUsername, customerPassword, writeData);
+                    customer.registerCustomer(username, password, writeData);
                 }
                 else
                 {
@@ -165,20 +169,20 @@ public class ClientHandler implements Runnable
 
                 writeData.flush();
 
-                var adminLoginUsername = readData.readLine();
+                username = readData.readLine();
 
                 writeData.println("Admin Password: ");
 
                 writeData.flush();
 
-                var adminLoginPassword = readData.readLine();
+                password = readData.readLine();
 
                 try
                 {
-                    if (!adminLoginUsername.isEmpty() && !adminLoginPassword.isEmpty())
+                    if (!username.isEmpty() && !password.isEmpty())
                     {
-                        synchronized (adminReg){
-                            adminReg.loginAdmin(adminLoginUsername, adminLoginPassword, writeData, readData);
+                        synchronized (admin){
+                            admin.loginAdmin(username, password, writeData, readData);
                         }
                     }
                     else
@@ -194,24 +198,24 @@ public class ClientHandler implements Runnable
                 break;
 
             case 4:
-                // Guest Login
+                // Customer Login
                 writeData.println("Customer Username: ");
 
                 writeData.flush();
 
-                var customerLoginUsername = readData.readLine();
+                username = readData.readLine();
 
                 writeData.println("Customer Password: ");
 
                 writeData.flush();
 
-                var customerLoginPassword = readData.readLine();
+                password = readData.readLine();
 
                 try
                 {
-                    if (!customerLoginUsername.isEmpty() && !customerLoginPassword.isEmpty())
+                    if (!username.isEmpty() && !password.isEmpty())
                     {
-                        customerReg.loginCustomer(customerLoginUsername, customerLoginPassword, writeData, readData);
+                        customer.loginCustomer(username, password, writeData, readData);
                     }
                     else
                     {

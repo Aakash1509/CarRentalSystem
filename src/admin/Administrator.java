@@ -11,7 +11,9 @@ import java.io.PrintWriter;
 public class Administrator
 {
     private String username;
+
     private String password;
+
     private HashMap<String, String> adminCredentials = new HashMap<>();
 
     //Private static instance of Singleton
@@ -24,14 +26,6 @@ public class Administrator
     {
 
     }
-
-    /*
-    public AdminDetails(String username, String password)
-    {
-        this.username = username;
-        this.password = password;
-    }
-     */
 
     //Public static method to provide single instance
 
@@ -56,7 +50,6 @@ public class Administrator
 
     public synchronized void registerAdmin(String username, String password, PrintWriter writeData)
     {
-//        Admin newAdmin = new Admin(username,password);
         if (adminCredentials.isEmpty())
         {
             adminCredentials.put(username, password); // Store username and password in HashMap
@@ -75,9 +68,8 @@ public class Administrator
         if (adminCredentials.containsKey(username) && adminCredentials.get(username).equals(password))
         {
             writeData.println("Login successful! Welcome, " + username);
-//            AdminMenu adminMenu = new AdminMenu();
 
-            //After successful login , redirect to AdminMenu.java
+            //After successful login , redirect to AdminDashboard.java
             AdminDashboard adminDashboard = new AdminDashboard();
 
             adminDashboard.showMenu(writeData, readData);

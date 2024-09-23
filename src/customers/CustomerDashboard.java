@@ -17,11 +17,9 @@ public class CustomerDashboard extends CarRentalSystem
 
     private List<RentalRecord> rentalRecords = new ArrayList<>();
 
-    private CustomerDetails customer;
+    private Customer customer;
 
-//    private Scanner scanner = new Scanner(System.in);
-
-    public CustomerDashboard(CustomerDetails customer)
+    public CustomerDashboard(Customer customer)
     {
         this.customer = customer;
     }
