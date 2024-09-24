@@ -19,7 +19,7 @@ public class Server
     {
         serverSocket = new ServerSocket(9999);
 
-        executorService = Executors.newFixedThreadPool(5);
+        executorService = Executors.newCachedThreadPool();
 
         System.out.println("Server is ready to accept connections");
 
