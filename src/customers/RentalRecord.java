@@ -2,15 +2,15 @@ package customers;
 
 public class RentalRecord
 {
-    private String rentalId;
+    private final String rentalId;
 
-    private String username;
+    private final String username;
 
-    private String carId;
+    private final String carId;
 
-    private int rentalDuration;
+    private final int rentalDuration;
 
-    private double totalCost;
+    private final double totalCost;
 
     public RentalRecord(String rentalId, String username, String carId, int rentalDuration, double totalCost)
     {

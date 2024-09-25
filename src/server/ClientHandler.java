@@ -94,6 +94,7 @@ public class ClientHandler implements Runnable
 
         var password = "";
 
+
         switch (choice)
         {
             case 1:

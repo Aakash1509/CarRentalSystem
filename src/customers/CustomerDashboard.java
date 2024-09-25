@@ -1,13 +1,19 @@
 package customers;
 
 import java.io.BufferedReader;
+
 import java.io.IOException;
+
 import java.io.PrintWriter;
+
 import java.util.ArrayList;
+
 import java.util.List;
+
 import java.util.concurrent.atomic.AtomicInteger;
 
 import system.CarDetails;
+
 import system.CarRentalSystem;
 
 public class CustomerDashboard extends CarRentalSystem
@@ -15,9 +21,9 @@ public class CustomerDashboard extends CarRentalSystem
     //To keep rental Id thread safe
     private static final AtomicInteger rentalIdCounter = new AtomicInteger(0);
 
-    private List<RentalRecord> rentalRecords = new ArrayList<>();
+    private final List<RentalRecord> rentalRecords = new ArrayList<>();
 
-    private Customer customer;
+    private final Customer customer;
 
     public CustomerDashboard(Customer customer)
     {
@@ -56,45 +62,44 @@ public class CustomerDashboard extends CarRentalSystem
         }
         else
         {
-            writeData.println("Enter rental duration (in days) : ");
+            writeData.println("Enter rental duration (in days): ");
+            writeData.flush(); // Ensure the prompt is sent immediately
 
-            writeData.flush();
+            try
+            {
+                var rentalDuration = Integer.parseInt(readData.readLine());
 
-            var rentalDuration = Integer.parseInt(readData.readLine());
+                // Calculate the total cost
+                var totalCost = rentalDuration * selectedCar.getBasePricePerDay();
 
-            //Total Cost
+                // Mark the car as rented
+                selectedCar.setAvailable(false);
 
-            var totalCost = rentalDuration * selectedCar.getBasePricePerDay();
+                // Generate Rental ID
+                var rentalId = "R" + rentalIdCounter.incrementAndGet();
 
-            //Mark the car as rented
+                // Create an object of RentalRecord class
+                RentalRecord record = new RentalRecord(rentalId, customer.getUsername(), selectedCar.getCarId(), rentalDuration, totalCost);
 
-            selectedCar.setAvailable(false);
+                // Adding rental record in ArrayList
+                rentalRecords.add(record);
 
-            //Generating Rental ID
+                writeData.println("\nCar rented successfully...");
 
-            var rentalId = "R" + rentalIdCounter.incrementAndGet();
+                writeData.println("Rental Details :");
 
-            //Create object of RentalRecord class
+                writeData.println("Car: " + selectedCar.getCarBrand() + " " + selectedCar.getCarModel());
 
-            RentalRecord record = new RentalRecord(rentalId, customer.getUsername(), selectedCar.getCarId(), rentalDuration, totalCost);
+                writeData.println("Rental Duration: " + rentalDuration + " days");
 
-            //Adding rental record in arraylist
+                writeData.println("Total Cost: $ " + totalCost);
+            }
+            catch (NumberFormatException e)
+            {
+                writeData.println("Invalid input for rental duration. Please enter a valid number.");
+            }
+            writeData.flush(); // Ensure all output is sent to the client
 
-            rentalRecords.add(record);
-
-            writeData.println("\nCar rented successfully...");
-
-            //Displaying Car Details
-
-            writeData.println("Rental Details :");
-
-            writeData.println("Car :" + selectedCar.getCarBrand() + " " + selectedCar.getCarModel());
-
-            writeData.println("Rental Duration :" + rentalDuration + " days");
-
-            writeData.println("Total Cost: $ " + totalCost);
-
-            writeData.flush();
         }
     }
 

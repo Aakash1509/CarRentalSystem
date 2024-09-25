@@ -1,7 +1,9 @@
 package admin;
 
 import java.io.BufferedReader;
+
 import java.io.IOException;
+
 import java.util.HashMap;
 
 import java.io.PrintWriter;
@@ -14,7 +16,7 @@ public class Administrator
 
     private String password;
 
-    private HashMap<String, String> adminCredentials = new HashMap<>();
+    private final HashMap<String, String> adminCredentials = new HashMap<>();
 
     //Private static instance of Singleton
 
@@ -36,16 +38,6 @@ public class Administrator
             instance = new Administrator();
         }
         return instance;
-    }
-
-    public String getUsername()
-    {
-        return username;
-    }
-
-    public String getPassword()
-    {
-        return password;
     }
 
     public synchronized void registerAdmin(String username, String password, PrintWriter writeData)
@@ -81,10 +73,5 @@ public class Administrator
             writeData.println("Invalid username or password. Login again");
             return false;
         }
-    }
-
-    public HashMap<String, String> getAdminCredentials()
-    {
-        return adminCredentials;
     }
 }
