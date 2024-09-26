@@ -10,16 +10,17 @@ import java.util.concurrent.ExecutorService;
 
 import java.util.concurrent.Executors;
 
-//This will replace Main.java
+//This will be replaced by Main.java
+
 public class Server
 {
     private final ServerSocket serverSocket; //for server
 
     private final ExecutorService executorService; //Thread pool
 
-    public Server() throws IOException
+    public Server() throws Exception
     {
-        serverSocket = new ServerSocket(9999);
+        serverSocket = new ServerSocket(9999);  
 
         executorService = Executors.newCachedThreadPool();
 
@@ -64,11 +65,11 @@ public class Server
 
         try
         {
-            Server server = new Server();
+            var server = new Server();
 
             server.start();
         }
-        catch (IOException e)
+        catch (Exception e)
         {
             System.out.println("An error occurred during starting the server : "+e.getMessage());
         }

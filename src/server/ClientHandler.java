@@ -1,12 +1,21 @@
 package server;
 
+import admin.AdminDashboard;
+
 import admin.Administrator;
+
 import customers.Customer;
 
+import customers.CustomerDashboard;
+
+import customers.CustomerService;
+
 import java.io.BufferedReader;
-import java.io.IOException;
+
 import java.io.InputStreamReader;
+
 import java.io.PrintWriter;
+
 import java.net.Socket;
 
 public class ClientHandler implements Runnable
@@ -21,7 +30,7 @@ public class ClientHandler implements Runnable
     private PrintWriter writeData;
 
     //For Admin
-    Administrator admin = Administrator.getInstance();
+    Administrator admin;
 
     //For Customer
     Customer customer;
@@ -41,9 +50,9 @@ public class ClientHandler implements Runnable
 
             listenClientRequests();
         }
-        catch (IOException e)
+        catch (Exception e)
         {
-            e.printStackTrace();
+            System.out.println("Error occurred : "+e.getMessage());
         }
         finally
         {
@@ -51,7 +60,7 @@ public class ClientHandler implements Runnable
         }
     }
 
-    private void listenClientRequests() throws IOException
+    private void listenClientRequests()
     {
         int choice = 0;
 
@@ -79,7 +88,15 @@ public class ClientHandler implements Runnable
             {
                 choice = Integer.parseInt(readData.readLine());
 
-                handleClientRequest(choice);
+                try
+                {
+                    handleClientRequest(choice);
+                }
+                catch (Exception e)
+                {
+                    System.out.println("Error occurred : "+e.getMessage());
+                }
+
             }
             catch (Exception e)
             {
@@ -88,12 +105,15 @@ public class ClientHandler implements Runnable
         } while (choice!=5);
     }
 
-    private void handleClientRequest(int choice) throws IOException
+    private void handleClientRequest(int choice) throws Exception
     {
         var username = "";
 
         var password = "";
 
+        var login = true;
+
+        var register = true;
 
         switch (choice)
         {
@@ -117,12 +137,20 @@ public class ClientHandler implements Runnable
 
                 if (!username.isEmpty() && !password.isEmpty())
                 {
-                    synchronized (Administrator.class)
-                    {
                         admin = Administrator.getInstance();
 
-                        admin.registerAdmin(username, password, writeData);
-                    }
+                        if(!admin.exist())
+                        {
+                            Administrator.registerAdmin(username, password);
+
+                            writeData.println("Admin " + username + " registered successfully!");
+                        }
+                        else
+                        {
+                            writeData.println("An admin is already registered. Registration is not allowed");
+
+                            writeData.flush();
+                        }
                 }
                 else
                 {
@@ -156,7 +184,16 @@ public class ClientHandler implements Runnable
                 {
                     customer = new Customer(username, password, drivingLicenseNumber);
 
-                    customer.registerCustomer(username, password, writeData);
+                    register = customer.registerCustomer(username, password);
+
+                    if(register)
+                    {
+                        writeData.println("Customer " + username + " registered successfully!");
+                    }
+                    else
+                    {
+                        writeData.println("This username already exists. Please register using other username");
+                    }
                 }
                 else
                 {
@@ -182,8 +219,20 @@ public class ClientHandler implements Runnable
                 {
                     if (!username.isEmpty() && !password.isEmpty())
                     {
-                        synchronized (admin){
-                            admin.loginAdmin(username, password, writeData, readData);
+                        login = admin.loginAdmin(username, password);
+
+                        if(login)
+                        {
+                            writeData.println("Login successful! Welcome, " + username);
+
+                            //After successful login , redirect to AdminDashboard.java
+                            AdminDashboard adminDashboard = new AdminDashboard();
+
+                            adminDashboard.showMenu(writeData, readData);
+                        }
+                        else
+                        {
+                            writeData.println("Invalid username or password. Login again");
                         }
                     }
                     else
@@ -216,7 +265,26 @@ public class ClientHandler implements Runnable
                 {
                     if (!username.isEmpty() && !password.isEmpty())
                     {
-                        customer.loginCustomer(username, password, writeData, readData);
+                        login = customer.loginCustomer(username, password);
+
+                        if(login)
+                        {
+                            writeData.println("Login successful! Welcome, " + username);
+                            //Need to create object of Customer Details as I need username in Customer Dashboard
+//                            Customer customer = new Customer(username, password, drivingLicenseNumber);
+
+                            //After successful login , redirect to CustomerDashboard.java
+                            CustomerDashboard customerDashboard = new CustomerDashboard(customer);
+
+                            CustomerService customerService = new CustomerService(customer);
+
+
+                            customerDashboard.showMenu(writeData, readData);
+                        }
+                        else
+                        {
+                            writeData.println("Invalid username or password.");
+                        }
                     }
                     else
                     {
@@ -252,7 +320,7 @@ public class ClientHandler implements Runnable
 
             if(clientSocket!=null){clientSocket.close();}
         }
-        catch (IOException e)
+        catch (Exception e)
         {
             System.out.println("Error while closing resources : "+e.getMessage());
         }

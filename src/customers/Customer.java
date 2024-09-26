@@ -1,9 +1,5 @@
 package customers;
 
-import java.io.BufferedReader;
-
-import java.io.PrintWriter;
-
 import java.util.HashMap;
 
 public class Customer
@@ -43,7 +39,9 @@ public class Customer
         return drivingLicenseNumber;
     }
 
-    public synchronized void registerCustomer(String username, String password, PrintWriter writeData)
+    //This will be synchronized as I am checking here that is username unique or not
+
+    public synchronized boolean registerCustomer(String username, String password)
     {
         //Logic to check : is username unique or not
 
@@ -51,22 +49,22 @@ public class Customer
         {
             customerCredentials.put(username, password); // Store username and password in HashMap
 
-            writeData.println("Customer " + username + " registered successfully!");
+            return true;
         }
         else
         {
-            writeData.println("This username already exists. Please register using other username");
+            return false;
         }
 
     }
 
-    public synchronized boolean loginCustomer(String username, String password , PrintWriter writeData, BufferedReader readData)
+    public boolean loginCustomer(String username, String password)
     {
         if (customerCredentials.containsKey(username) && customerCredentials.get(username).equals(password))
         {
-            writeData.println("Login successful! Welcome, " + username);
-
-            //Need to create object of Customer Details as I need username in Customer Dashboard
+//            writeData.println("Login successful! Welcome, " + username);
+            /*
+            //Need to create object of Customer as I need username in Customer Dashboard
             Customer customer = new Customer(username, password, drivingLicenseNumber);
 
             //After successful login , redirect to CustomerDashboard.java
@@ -74,18 +72,13 @@ public class Customer
 
             customerDashboard.showMenu(writeData, readData);
 
+             */
+
             return true;
         }
         else
         {
-            writeData.println("Invalid username or password.");
-
             return false;
         }
-    }
-
-    public HashMap<String, String> getCustomerCredentials()
-    {
-        return customerCredentials;
     }
 }

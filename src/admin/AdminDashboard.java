@@ -14,7 +14,7 @@ import system.CarDetails;
 
 public class AdminDashboard extends CarRentalSystem
 {
-    public synchronized void addCar(PrintWriter writeData, BufferedReader readData) throws IOException
+    public void addCar(PrintWriter writeData, BufferedReader readData) throws Exception
     {
         writeData.println("\nFill up following details to add a car\nEnter Car ID: ");
 
@@ -94,7 +94,7 @@ public class AdminDashboard extends CarRentalSystem
         writeData.flush();
     }
 
-    public synchronized void removeCar(PrintWriter writeData, BufferedReader readData) throws IOException
+    public void removeCar(PrintWriter writeData, BufferedReader readData) throws Exception
     {
         writeData.println("\nEnter the Id of the car you want to remove :\nEnter Car ID: ");
 
@@ -164,7 +164,7 @@ public class AdminDashboard extends CarRentalSystem
         writeData.flush();
     }
 
-    public synchronized void updateCarDetails(PrintWriter writeData, BufferedReader readData) throws IOException
+    public void updateCarDetails(PrintWriter writeData, BufferedReader readData) throws Exception
     {
         writeData.println("\nEnter the ID of the car you want to update :\nCar ID: ");
 
@@ -322,11 +322,13 @@ public class AdminDashboard extends CarRentalSystem
                         writeData.flush();
                 }
             }
+            catch (NumberFormatException e)
+            {
+                writeData.println("Invalid data...Please enter a number between 1 to 5");
+            }
             catch (Exception e)
             {
-                writeData.println("Invalid data...Please enter a number between 1 to 6");
-
-                writeData.flush();
+                writeData.println("Error occurred" + e.getMessage());
             }
         } while (choice!=6);
     }

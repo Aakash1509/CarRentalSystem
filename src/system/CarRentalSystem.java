@@ -10,11 +10,13 @@ import java.util.ArrayList;
 
 import java.util.List;
 
+import java.util.concurrent.CopyOnWriteArrayList;
+
 //Created abstract class as ArrayList of cars will be shared by both admin and user and menu method can also be override
 public abstract class CarRentalSystem
 {
     //Made it static so both admin and customers share it
-    protected static List<CarDetails> cars = new ArrayList<>();
+    public static List<CarDetails> cars = new ArrayList<>();
 
     //Initializer block (cars.add() method should not be outside any method or block)
     static
@@ -85,5 +87,5 @@ public abstract class CarRentalSystem
         writeData.flush();
     }
 
-    public abstract void showMenu(PrintWriter writeData, BufferedReader readData) throws IOException;
+    public abstract void showMenu(PrintWriter writeData, BufferedReader readData) throws Exception;
 }

@@ -8,17 +8,25 @@ public class RentalRecord
 
     private final String carId;
 
+    private final String carBrand;
+
+    private final String carModel;
+
     private final int rentalDuration;
 
     private final double totalCost;
 
-    public RentalRecord(String rentalId, String username, String carId, int rentalDuration, double totalCost)
+    public RentalRecord(String rentalId, String username, String carId, String carBrand, String carModel, int rentalDuration, double totalCost)
     {
         this.rentalId = rentalId;
 
         this.username = username;
 
         this.carId = carId;
+
+        this.carBrand = carBrand;
+
+        this.carModel = carModel;
 
         this.rentalDuration = rentalDuration;
 
@@ -33,6 +41,16 @@ public class RentalRecord
     public String getUsername()
     {
         return username;
+    }
+
+    public String getCarBrand()
+    {
+        return carBrand;
+    }
+
+    public String getCarModel()
+    {
+        return carModel;
     }
 
     public int getRentalDuration()

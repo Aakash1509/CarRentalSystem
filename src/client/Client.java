@@ -88,10 +88,8 @@ public class Client
                     }
                 }
             }
-
-
         }
-        catch (IOException e)
+        catch (Exception e)
         {
             System.out.println("Error during communication : " + e.getMessage());
         }

@@ -16,21 +16,25 @@ import system.CarDetails;
 
 import system.CarRentalSystem;
 
+import customers.CustomerService;
+
 public class CustomerDashboard extends CarRentalSystem
 {
     //To keep rental Id thread safe
-    private static final AtomicInteger rentalIdCounter = new AtomicInteger(0);
-
     private final List<RentalRecord> rentalRecords = new ArrayList<>();
 
     private final Customer customer;
 
+    private final CustomerService customerService;
+
     public CustomerDashboard(Customer customer)
     {
         this.customer = customer;
+
+        this.customerService = new CustomerService(customer);
     }
 
-    public synchronized void rentCar(PrintWriter writeData, BufferedReader readData) throws IOException
+    public synchronized void rentCar(PrintWriter writeData, BufferedReader readData) throws Exception
     {
         viewAvailableCars(writeData);
 
@@ -40,95 +44,43 @@ public class CustomerDashboard extends CarRentalSystem
 
         var carId = readData.readLine();
 
-        CarDetails selectedCar = null;
+        writeData.println("Enter rental duration (in days): ");
 
-        //Find selected car
+        writeData.flush(); // Ensure the prompt is sent immediately
 
-        for (CarDetails car : cars)
+        try
         {
-            if (car.getCarId().equals(carId) && car.isAvailable())
-            {
-                selectedCar = car;
+            var rentalDuration = Integer.parseInt(readData.readLine());
 
-                car.setRentedBy(customer.getUsername());
+            RentalRecord record = customerService.rentCarProcess(carId,rentalDuration,cars);
 
-                break;
-            }
+            // Adding rental record in ArrayList
+            rentalRecords.add(record);
+
+            writeData.println("\nCar rented successfully...");
+
+            writeData.println("Rental Details :");
+
+            writeData.println("Car: " + record.getCarBrand() + " " + record.getCarModel());
+
+            writeData.println("Rental Duration: " + rentalDuration + " days");
+
+            writeData.println("Total Cost: $ " + record.getTotalCost());
         }
-
-        if (selectedCar==null)
+        catch (NumberFormatException e)
         {
-            writeData.println("Car is not available or invalid car ID");
+            writeData.println("Invalid input for rental duration. Please enter a valid number.");
         }
-        else
-        {
-            writeData.println("Enter rental duration (in days): ");
-            writeData.flush(); // Ensure the prompt is sent immediately
+        writeData.flush(); // Ensure all output is sent to the client
 
-            try
-            {
-                var rentalDuration = Integer.parseInt(readData.readLine());
-
-                // Calculate the total cost
-                var totalCost = rentalDuration * selectedCar.getBasePricePerDay();
-
-                // Mark the car as rented
-                selectedCar.setAvailable(false);
-
-                // Generate Rental ID
-                var rentalId = "R" + rentalIdCounter.incrementAndGet();
-
-                // Create an object of RentalRecord class
-                RentalRecord record = new RentalRecord(rentalId, customer.getUsername(), selectedCar.getCarId(), rentalDuration, totalCost);
-
-                // Adding rental record in ArrayList
-                rentalRecords.add(record);
-
-                writeData.println("\nCar rented successfully...");
-
-                writeData.println("Rental Details :");
-
-                writeData.println("Car: " + selectedCar.getCarBrand() + " " + selectedCar.getCarModel());
-
-                writeData.println("Rental Duration: " + rentalDuration + " days");
-
-                writeData.println("Total Cost: $ " + totalCost);
-            }
-            catch (NumberFormatException e)
-            {
-                writeData.println("Invalid input for rental duration. Please enter a valid number.");
-            }
-            writeData.flush(); // Ensure all output is sent to the client
-
-        }
     }
 
-    public synchronized void returnCar(PrintWriter writeData, BufferedReader readData) throws IOException
+    public void returnCar(PrintWriter writeData, BufferedReader readData) throws Exception
     {
         var username = customer.getUsername();
 
-        /* boolean hasRentedCars = rentalRecords.stream().anyMatch(record -> record.getUsername().equals(username));*/
-        boolean hasRentedCars = false;
-
-        for (RentalRecord record : rentalRecords)
-        {
-            if (record.getUsername().equals(username))
-            {
-                hasRentedCars = true;
-
-                break;
-            }
-        }
-        if (!hasRentedCars)
-        {
-            writeData.println("\nYou have not rented any cars...");
-
-            return;
-        }
-        //To display user's rented cars
-        viewRentedCars(writeData);
-
         //Select which car to return based on Rental Id
+        viewRentedCars(writeData);
 
         writeData.println("\nEnter Rental Id of the car you want to return : ");
 
@@ -136,54 +88,15 @@ public class CustomerDashboard extends CarRentalSystem
 
         var rentalId = readData.readLine();
 
-        RentalRecord selectedRental = null;
+        var result = customerService.returnCarProcess(cars,rentalId,username,rentalRecords);
 
-        /*Using streamAPI
-         RentalRecord selectedRental = rentalRecords.stream()
-                .filter(record -> record.getRentalId().equals(rentalId) && record.getUsername().equals(username))
-                .findFirst().orElse(null);
-         */
+        writeData.println(result);
 
-        for (RentalRecord record : rentalRecords)
-        {
-            if (record.getRentalId().equals(rentalId) && record.getUsername().equals(username))
-            {
-                selectedRental = record;
-            }
-        }
+        writeData.flush();
 
-        if (selectedRental==null)
-        {
-            writeData.println("Invalid Rental ID . Please try again");
-
-            return;
-        }
-
-        //Need to update Car status also
-
-        CarDetails rentedCar = findCarById(selectedRental.getCarId());
-
-        if (rentedCar!=null)
-        {
-            rentedCar.setAvailable(true);
-
-            writeData.println("Car returned successfully");
-
-            //Removing from rental records also
-
-            rentalRecords.remove(selectedRental);
-
-            writeData.println("Rental Id : " + selectedRental.getRentalId() + " has been successfully returned");
-
-            writeData.flush();
-        }
-        else
-        {
-            writeData.println("Unable to find the car associated with this rental.");
-        }
     }
 
-    public synchronized void viewRentedCars(PrintWriter writeData)
+    public void viewRentedCars(PrintWriter writeData)
     {
         var username = customer.getUsername();
 
@@ -197,22 +110,18 @@ public class CustomerDashboard extends CarRentalSystem
         {
             if (record.getUsername().equals(username))
             {
-                CarDetails car = findCarById(record.getCarId());
 
-                if (car!=null)
-                {
-                    writeData.println("Rental Id :" + record.getRentalId());
+                writeData.println("Rental Id :" + record.getRentalId());
 
-                    writeData.println("Car Rented :" + car.getCarBrand() + " " + car.getCarModel());
+                writeData.println("Car Rented :" + record.getCarBrand() + " " + record.getCarModel());
 
-                    writeData.println("Rental Duration :" + record.getRentalDuration());
+                writeData.println("Rental Duration :" + record.getRentalDuration());
 
-                    writeData.println("Total Cost :" + record.getTotalCost());
+                writeData.println("Total Cost :" + record.getTotalCost());
 
-                    writeData.println("-----------------------");
+                writeData.println("-----------------------");
 
-                    hasRentedCars = true;
-                }
+                hasRentedCars = true;
 
             }
         }
@@ -221,18 +130,6 @@ public class CustomerDashboard extends CarRentalSystem
             writeData.println("\nYou have not rented any cars");
         }
         writeData.flush();
-    }
-
-    private CarDetails findCarById(String carId)
-    {
-        for (CarDetails car : cars)
-        {
-            if (car.getCarId().equals(carId))
-            {
-                return car;
-            }
-        }
-        return null;
     }
 
     @Override
@@ -292,9 +189,13 @@ public class CustomerDashboard extends CarRentalSystem
                         writeData.println("Invalid choice, please try again.");
                 }
             }
-            catch (Exception e)
+            catch (NumberFormatException e)
             {
                 writeData.println("Invalid data...Please enter a number between 1 to 5");
+            }
+            catch (Exception e)
+            {
+                writeData.println("Error occurred" + e.getMessage());
             }
         } while (choice!=5);
     }
