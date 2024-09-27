@@ -102,11 +102,15 @@ public class CustomerService
 
         if (rentedCar!=null)
         {
-            rentedCar.setAvailable(true);
-
+            synchronized (cars)
+            {
+                rentedCar.setAvailable(true);
+            }
             //Removing from rental records also
-
-            rentalRecords.remove(selectedRental);
+            synchronized (rentalRecords)
+            {
+                rentalRecords.remove(selectedRental);
+            }
 
             return "Car returned successfully. Rental ID: " + rentalId;
 

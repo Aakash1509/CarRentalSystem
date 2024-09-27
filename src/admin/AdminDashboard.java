@@ -2,11 +2,7 @@ package admin;
 
 import java.io.BufferedReader;
 
-import java.io.IOException;
-
 import java.io.PrintWriter;
-
-import java.util.*;
 
 import system.CarRentalSystem;
 
@@ -14,6 +10,13 @@ import system.CarDetails;
 
 public class AdminDashboard extends CarRentalSystem
 {
+    private final AdminService adminService;
+
+    public AdminDashboard()
+    {
+        adminService = new AdminService();
+    }
+
     public void addCar(PrintWriter writeData, BufferedReader readData) throws Exception
     {
         writeData.println("\nFill up following details to add a car\nEnter Car ID: ");
@@ -22,74 +25,59 @@ public class AdminDashboard extends CarRentalSystem
 
         var carId = readData.readLine();
 
-        //Check if carId already exists
-
-        boolean carExists = false;
-
-        for(CarDetails car : cars)
+        synchronized (cars)
         {
-            if(car.getCarId().equals(carId))
+            if(adminService.carExists(carId,cars))
             {
-                carExists = true;
+                writeData.println("\nCar with this ID already exists. Please try again with another ID");
 
-                break;
+                writeData.flush();
+
+                return;
             }
-        }
-
-        if(carExists)
-        {
-            writeData.println("\nCar with this ID already exists. Please try again with another ID");
+            writeData.println("Brand: ");
 
             writeData.flush();
 
-            return;
-        }
+            var carBrand = readData.readLine();
 
-        writeData.println("Brand: ");
-
-        writeData.flush();
-
-        var carBrand = readData.readLine();
-
-        writeData.println("Model: ");
-
-        writeData.flush();
-
-        var carModel = readData.readLine();
-
-        writeData.println("Base Price Per Day: ");
-
-        writeData.flush();
-
-        var basePricePerDay = readData.readLine();
-
-        if(carId.isEmpty() || carBrand.isEmpty() || carModel.isEmpty() || basePricePerDay.isEmpty())
-        {
-            writeData.println("\nPlease fill up all the required details to add the car..");
-
-            return;
-        }
-
-        // Validate base price is a number
-        double basePrice;
-
-        try
-        {
-            basePrice = Double.parseDouble(basePricePerDay);
-        }
-        catch (NumberFormatException e)
-        {
-            writeData.println("\nInvalid input for Base Price Per Day. Please enter a valid number.");
+            writeData.println("Model: ");
 
             writeData.flush();
-            return;
+
+            var carModel = readData.readLine();
+
+            writeData.println("Base Price Per Day: ");
+
+            writeData.flush();
+
+            var basePricePerDay = readData.readLine();
+
+            if(carId.isEmpty() || carBrand.isEmpty() || carModel.isEmpty() || basePricePerDay.isEmpty())
+            {
+                writeData.println("\nPlease fill up all the required details to add the car..");
+
+                return;
+            }
+            // Validate base price is a number
+            double basePrice;
+
+            try
+            {
+                basePrice = Double.parseDouble(basePricePerDay);
+            }
+            catch (NumberFormatException e)
+            {
+                writeData.println("\nInvalid input for Base Price Per Day. Please enter a valid number.");
+
+                writeData.flush();
+                return;
+            }
+
+            adminService.addCarProcess(cars,carId,carBrand,carModel,basePrice);
+
+            writeData.println("\nCar was successfully added");
         }
-
-        CarDetails car = new CarDetails(carId, carBrand, carModel, basePrice);
-
-        cars.add(car);
-
-        writeData.println("\nCar was successfully added");
 
         writeData.flush();
     }
@@ -102,42 +90,12 @@ public class AdminDashboard extends CarRentalSystem
 
         var carId = readData.readLine();
 
-        //Cannot use forEach loop because it will throw ConcurrentModificationException , so need to use iterator
+        var result = adminService.removeCarProcess(cars,carId);
 
-        Iterator<CarDetails> iterator = cars.iterator(); // Get the iterator
+        writeData.println(result);
 
-        boolean carRemoved = false;
-
-        while (iterator.hasNext())
-        {
-            CarDetails car = iterator.next(); // Get the next car
-
-            // Check if the car is available and matches the ID
-
-            if (Objects.equals(car.getCarId(), carId))
-            {
-                if(!car.isAvailable())
-                {
-                    writeData.println("Cannot remove car with ID "+ carId + " because car is currently rented");
-
-                    carRemoved = true;
-
-                    break;
-                }
-                iterator.remove(); // Use iterator's remove method to safely remove the car
-
-                writeData.println("\nCar with ID " + carId + " removed successfully.");
-
-                carRemoved = true;
-
-                break;
-            }
-        }
-        if (!carRemoved)
-        {
-            writeData.println("No available car found with ID: " + carId);
-        }
         writeData.flush();
+
     }
 
     public void viewRentedCars(PrintWriter writeData)
@@ -164,6 +122,7 @@ public class AdminDashboard extends CarRentalSystem
         writeData.flush();
     }
 
+    //Synchronization required if client is renting a car , admin tries to update car details which is not rented can throw ConcurrentModificationException
     public void updateCarDetails(PrintWriter writeData, BufferedReader readData) throws Exception
     {
         writeData.println("\nEnter the ID of the car you want to update :\nCar ID: ");
@@ -172,84 +131,62 @@ public class AdminDashboard extends CarRentalSystem
 
         var toUpdateCarId = readData.readLine();
 
-        boolean carFound = false;
+        CarDetails car = null;
 
-        for (CarDetails car : cars)
+        synchronized (cars)
         {
-            if (Objects.equals(car.getCarId(), toUpdateCarId))
-            {
-                if(!car.isAvailable())
-                {
-                    writeData.println("Cannot update car details with ID "+ toUpdateCarId + " because car is currently rented");
-
-                    carFound = true;
-
-                    break;
-                }
-                carFound = true;
-
-                //Displaying current car details
-
-                writeData.println("Current details of the car:");
-
-                writeData.println("Car Brand:" + car.getCarBrand());
-
-                writeData.println("Car Model:" + car.getCarModel());
-
-                writeData.println("Car Rent per day:" + car.getBasePricePerDay());
-
-                // Take new details as input
-
-                writeData.println("\nEnter new details (leave blank to keep current value):");
-
-                writeData.println("New Car Brand : ");
-
-                writeData.flush();
-
-                var newCarBrand = readData.readLine();
-
-                if (!newCarBrand.isEmpty())
-                {
-                    car.setCarBrand(newCarBrand);
-                }
-                writeData.println("New Car Model : ");
-
-                writeData.flush();
-
-                var newCarModel = readData.readLine();
-
-                if (!newCarModel.isEmpty())
-                {
-                    car.setCarModel(newCarModel);
-                }
-                writeData.println("New base price per day : ");
-
-                writeData.flush();
-
-                var newRentPrice = readData.readLine();
-
-                if (!newRentPrice.isEmpty())
-                {
-                    try
-                    {
-                        var newBasePrice = Double.parseDouble(newRentPrice);
-
-                        car.setBasePricePerDay(newBasePrice);
-                    }
-                    catch (NumberFormatException e)
-                    {
-                        writeData.println("Invalid Rent value. Keeping current rent");
-                    }
-                }
-                writeData.println("Car details updated successfully");
-
-                break;
-            }
+            car = adminService.getCarById(toUpdateCarId,cars);
         }
-        if (!carFound)
+
+        if(car == null)
         {
-            writeData.println("Car not found with ID: " + toUpdateCarId);
+            writeData.println("Car not found with ID : "+toUpdateCarId);
+            return;
         }
+
+        //Displaying current car details
+
+        writeData.println("Current details of the car:");
+
+        writeData.println("Car Brand:" + car.getCarBrand());
+
+        writeData.println("Car Model:" + car.getCarModel());
+
+        writeData.println("Car Rent per day: $" + car.getBasePricePerDay());
+
+        writeData.flush();
+
+        // Take new details as input
+
+        writeData.println("\nEnter new details (leave blank to keep current value):");
+
+        writeData.println("New Car Brand : ");
+
+        writeData.flush();
+
+        var newCarBrand = readData.readLine();
+
+        writeData.println("New Car Model : ");
+
+        writeData.flush();
+
+        var newCarModel = readData.readLine();
+
+        writeData.println("New base price per day : ");
+
+        writeData.flush();
+
+        var newRentPrice = readData.readLine();
+
+        String result = "";
+
+        synchronized (cars)
+        {
+           result = adminService.updateCarProcess(car,newCarBrand,newCarModel,newRentPrice);
+        }
+
+        writeData.println(result);
+
         writeData.flush();
     }
 
@@ -324,11 +261,11 @@ public class AdminDashboard extends CarRentalSystem
             }
             catch (NumberFormatException e)
             {
-                writeData.println("Invalid data...Please enter a number between 1 to 5");
+                writeData.println("Invalid data...Please enter a number between 1 to 6");
             }
             catch (Exception e)
             {
-                writeData.println("Error occurred" + e.getMessage());
+                writeData.println("An Error occurred " + e.getMessage());
             }
         } while (choice!=6);
     }

@@ -276,7 +276,7 @@ public class ClientHandler implements Runnable
                             //After successful login , redirect to CustomerDashboard.java
                             CustomerDashboard customerDashboard = new CustomerDashboard(customer);
 
-                            CustomerService customerService = new CustomerService(customer);
+//                            CustomerService customerService = new CustomerService(customer);
 
 
                             customerDashboard.showMenu(writeData, readData);

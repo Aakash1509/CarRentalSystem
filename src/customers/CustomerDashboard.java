@@ -2,21 +2,13 @@ package customers;
 
 import java.io.BufferedReader;
 
-import java.io.IOException;
-
 import java.io.PrintWriter;
 
 import java.util.ArrayList;
 
 import java.util.List;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
-import system.CarDetails;
-
 import system.CarRentalSystem;
-
-import customers.CustomerService;
 
 public class CustomerDashboard extends CarRentalSystem
 {
@@ -34,7 +26,7 @@ public class CustomerDashboard extends CarRentalSystem
         this.customerService = new CustomerService(customer);
     }
 
-    public synchronized void rentCar(PrintWriter writeData, BufferedReader readData) throws Exception
+    public void rentCar(PrintWriter writeData, BufferedReader readData) throws Exception
     {
         viewAvailableCars(writeData);
 
@@ -52,10 +44,15 @@ public class CustomerDashboard extends CarRentalSystem
         {
             var rentalDuration = Integer.parseInt(readData.readLine());
 
-            RentalRecord record = customerService.rentCarProcess(carId,rentalDuration,cars);
+            RentalRecord record;
 
-            // Adding rental record in ArrayList
-            rentalRecords.add(record);
+            synchronized (cars)
+            {
+                record = customerService.rentCarProcess(carId,rentalDuration,cars);
+
+                // Adding rental record in ArrayList
+                rentalRecords.add(record);
+            }
 
             writeData.println("\nCar rented successfully...");
 
@@ -195,7 +192,7 @@ public class CustomerDashboard extends CarRentalSystem
             }
             catch (Exception e)
             {
-                writeData.println("Error occurred" + e.getMessage());
+                writeData.println("An Error occurred " + e.getMessage());
             }
         } while (choice!=5);
     }
