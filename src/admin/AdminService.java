@@ -10,6 +10,9 @@ import java.util.Objects;
 
 public class AdminService
 {
+
+    //Function to check if car exist or not by car Id
+
     public boolean carExists(String carId, List<CarDetails> cars)
     {
         //Check if carId already exists
@@ -36,12 +39,16 @@ public class AdminService
         return null; //As car is not found with passed ID
     }
 
+    //Processing adding a car
+
     public void addCarProcess(List<CarDetails> cars,String carId, String carBrand, String carModel, double basePricePerDay) throws Exception
     {
         CarDetails car = new CarDetails(carId, carBrand, carModel, basePricePerDay);
 
         cars.add(car);
     }
+
+    //Processing removing a car
 
     public String removeCarProcess(List<CarDetails>cars, String carId)
     {
@@ -71,13 +78,10 @@ public class AdminService
         }
     }
 
+    //Processing updating a car
+
     public String updateCarProcess(CarDetails car, String newCarBrand, String newCarModel, String newRentPrice)
     {
-        if(!car.isAvailable())
-        {
-            return "Cannot update car details with ID "+ car.getCarId() + " because car is currently rented";
-        }
-
         if (!newCarBrand.isEmpty())
         {
             car.setCarBrand(newCarBrand);

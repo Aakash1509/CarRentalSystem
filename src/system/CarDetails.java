@@ -2,6 +2,8 @@ package system;
 
 //Will be from Admin side
 
+//Details of the car
+
 public class CarDetails
 {
     private String carId;
@@ -56,9 +58,7 @@ public class CarDetails
         return rentedBy;
     }
 
-    //Only this function synchronized as this will be accessed by multiple clients
-
-    public synchronized void setAvailable(boolean available)
+    public void setAvailable(boolean available)
     {
         this.isAvailable = available;
     }

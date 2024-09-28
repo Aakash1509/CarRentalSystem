@@ -1,5 +1,3 @@
-//package server;
-
 import server.ClientHandler;
 
 import java.io.IOException;
@@ -12,7 +10,6 @@ import java.util.concurrent.ExecutorService;
 
 import java.util.concurrent.Executors;
 
-//This will replace Main.java
 public class Main
 {
     private final ServerSocket serverSocket; //for server

@@ -55,25 +55,12 @@ public class Customer
         {
             return false;
         }
-
     }
 
     public boolean loginCustomer(String username, String password)
     {
         if (customerCredentials.containsKey(username) && customerCredentials.get(username).equals(password))
         {
-//            writeData.println("Login successful! Welcome, " + username);
-            /*
-            //Need to create object of Customer as I need username in Customer Dashboard
-            Customer customer = new Customer(username, password, drivingLicenseNumber);
-
-            //After successful login , redirect to CustomerDashboard.java
-            CustomerDashboard customerDashboard = new CustomerDashboard(customer);
-
-            customerDashboard.showMenu(writeData, readData);
-
-             */
-
             return true;
         }
         else

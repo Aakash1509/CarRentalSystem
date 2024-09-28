@@ -8,8 +8,6 @@ import customers.Customer;
 
 import customers.CustomerDashboard;
 
-import customers.CustomerService;
-
 import java.io.BufferedReader;
 
 import java.io.InputStreamReader;
@@ -119,13 +117,10 @@ public class ClientHandler implements Runnable
         {
             case 1:
                 // Admin Registration
+
                 writeData.println("Enter Admin Details:\nUsername: ");
 
                 writeData.flush();
-
-//                writeData.println("Username: ");
-//
-//                writeData.flush();
 
                 username = readData.readLine();
 
@@ -162,6 +157,7 @@ public class ClientHandler implements Runnable
 
             case 2:
                 // Customer Registration
+
                 writeData.println("Enter Customer Details:\nUsername: ");
 
                 writeData.flush();
@@ -203,6 +199,7 @@ public class ClientHandler implements Runnable
 
             case 3:
                 // Admin Login
+
                 writeData.println("Admin Username: ");
 
                 writeData.flush();
@@ -225,10 +222,11 @@ public class ClientHandler implements Runnable
                         {
                             writeData.println("Login successful! Welcome, " + username);
 
-                            //After successful login , redirect to AdminDashboard.java
+                            //After successful login , redirect to AdminDashboard
+
                             AdminDashboard adminDashboard = new AdminDashboard();
 
-                            adminDashboard.showMenu(writeData, readData);
+                            adminDashboard.showDashboard(writeData, readData);
                         }
                         else
                         {
@@ -249,6 +247,7 @@ public class ClientHandler implements Runnable
 
             case 4:
                 // Customer Login
+
                 writeData.println("Customer Username: ");
 
                 writeData.flush();
@@ -270,16 +269,12 @@ public class ClientHandler implements Runnable
                         if(login)
                         {
                             writeData.println("Login successful! Welcome, " + username);
-                            //Need to create object of Customer Details as I need username in Customer Dashboard
-//                            Customer customer = new Customer(username, password, drivingLicenseNumber);
 
-                            //After successful login , redirect to CustomerDashboard.java
+                            //After successful login , redirect to CustomerDashboard
+
                             CustomerDashboard customerDashboard = new CustomerDashboard(customer);
 
-//                            CustomerService customerService = new CustomerService(customer);
-
-
-                            customerDashboard.showMenu(writeData, readData);
+                            customerDashboard.showDashboard(writeData, readData);
                         }
                         else
                         {

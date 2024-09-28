@@ -2,8 +2,8 @@ package customers;
 
 import system.CarDetails;
 
-import java.util.ArrayList;
 import java.util.List;
+
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class CustomerService
@@ -13,7 +13,8 @@ public class CustomerService
     private final Customer customer;
 
     // Constructor
-    public CustomerService(Customer customer) {
+    public CustomerService(Customer customer)
+    {
         this.customer = customer;
     }
 
@@ -50,31 +51,13 @@ public class CustomerService
             var rentalId = "R" + rentalIdCounter.incrementAndGet();
 
             // Create an object of RentalRecord class
-            RentalRecord record = new RentalRecord(rentalId, customer.getUsername(), selectedCar.getCarId(), selectedCar.getCarBrand(), selectedCar.getCarModel(), rentalDuration, totalCost);
 
-            return record;
+            return new RentalRecord(rentalId, customer.getUsername(), selectedCar.getCarId(), selectedCar.getCarBrand(), selectedCar.getCarModel(), rentalDuration, totalCost);
         }
     }
 
     public String returnCarProcess(List<CarDetails>cars,String rentalId, String username, List<RentalRecord> rentalRecords)
     {
-        /* boolean hasRentedCars = rentalRecords.stream().anyMatch(record -> record.getUsername().equals(username));*/
-        boolean hasRentedCars = false;
-
-        for (RentalRecord record : rentalRecords)
-        {
-            if (record.getUsername().equals(username))
-            {
-                hasRentedCars = true;
-
-                break;
-            }
-        }
-        if (!hasRentedCars)
-        {
-            return "\nYou have not rented any cars...";
-        }
-
         RentalRecord selectedRental = null;
 
         /*Using streamAPI
@@ -106,14 +89,12 @@ public class CustomerService
             {
                 rentedCar.setAvailable(true);
             }
-            //Removing from rental records also
+            //Removing from rental records also (Synchronized as multiple clients can work on rentalRecords arraylist)
             synchronized (rentalRecords)
             {
                 rentalRecords.remove(selectedRental);
             }
-
             return "Car returned successfully. Rental ID: " + rentalId;
-
         }
         else
         {

@@ -26,6 +26,8 @@ public class CustomerDashboard extends CarRentalSystem
         this.customerService = new CustomerService(customer);
     }
 
+    //Instead of making whole methods synchronized I have used synchronized block so that I/O can be done
+
     public void rentCar(PrintWriter writeData, BufferedReader readData) throws Exception
     {
         viewAvailableCars(writeData);
@@ -75,6 +77,26 @@ public class CustomerDashboard extends CarRentalSystem
     public void returnCar(PrintWriter writeData, BufferedReader readData) throws Exception
     {
         var username = customer.getUsername();
+
+        /* boolean hasRentedCars = rentalRecords.stream().anyMatch(record -> record.getUsername().equals(username));*/
+
+        boolean hasRentedCars = false;
+
+        for (RentalRecord record : rentalRecords)
+        {
+            if (record.getUsername().equals(username))
+            {
+                hasRentedCars = true;
+
+                break;
+            }
+        }
+        if (!hasRentedCars)
+        {
+            writeData.println("\nYou have not rented any cars");
+
+            return;
+        }
 
         //Select which car to return based on Rental Id
         viewRentedCars(writeData);
@@ -130,7 +152,7 @@ public class CustomerDashboard extends CarRentalSystem
     }
 
     @Override
-    public void showMenu(PrintWriter writeData, BufferedReader readData)
+    public void showDashboard(PrintWriter writeData, BufferedReader readData)
     {
         int choice = 0;
 

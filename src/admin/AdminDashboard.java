@@ -17,6 +17,10 @@ public class AdminDashboard extends CarRentalSystem
         adminService = new AdminService();
     }
 
+    //Instead of making whole methods synchronized I have used synchronized block so that I/O can be done
+
+    // Need to use synchronized block , as I can't modify arraylist while other thread is modifying it or doing operations on it
+
     public void addCar(PrintWriter writeData, BufferedReader readData) throws Exception
     {
         writeData.println("\nFill up following details to add a car\nEnter Car ID: ");
@@ -82,6 +86,8 @@ public class AdminDashboard extends CarRentalSystem
         writeData.flush();
     }
 
+    //Synchronization required on arraylist as if client is trying to rent a car , admin can't remove it simultaneously
+
     public void removeCar(PrintWriter writeData, BufferedReader readData) throws Exception
     {
         writeData.println("\nEnter the Id of the car you want to remove :\nEnter Car ID: ");
@@ -123,6 +129,7 @@ public class AdminDashboard extends CarRentalSystem
     }
 
     //Synchronization required if client is renting a car , admin tries to update car details which is not rented can throw ConcurrentModificationException
+
     public void updateCarDetails(PrintWriter writeData, BufferedReader readData) throws Exception
     {
         writeData.println("\nEnter the ID of the car you want to update :\nCar ID: ");
@@ -133,14 +140,18 @@ public class AdminDashboard extends CarRentalSystem
 
         CarDetails car = null;
 
-        synchronized (cars)
-        {
-            car = adminService.getCarById(toUpdateCarId,cars);
-        }
+        car = adminService.getCarById(toUpdateCarId,cars);
 
         if(car == null)
         {
             writeData.println("Car not found with ID : "+toUpdateCarId);
+
+            return;
+        }
+        if(!car.isAvailable())
+        {
+            writeData.println("Cannot update car details with ID "+ car.getCarId() + " because car is currently rented");
+
             return;
         }
 
@@ -192,7 +203,7 @@ public class AdminDashboard extends CarRentalSystem
 
     @Override
 
-    public void showMenu(PrintWriter writeData, BufferedReader readData)
+    public void showDashboard(PrintWriter writeData, BufferedReader readData)
     {
         int choice = 0;
 
