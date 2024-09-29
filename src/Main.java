@@ -16,7 +16,7 @@ public class Main
 
     private final ExecutorService executorService; //Thread pool
 
-    public Main() throws IOException
+    public Main() throws Exception
     {
         serverSocket = new ServerSocket(9999);
 

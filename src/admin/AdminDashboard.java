@@ -29,60 +29,59 @@ public class AdminDashboard extends CarRentalSystem
 
         var carId = readData.readLine();
 
+        if(adminService.carExists(carId,cars))
+        {
+            writeData.println("\nCar with this ID already exists. Please try again with another ID");
+
+            writeData.flush();
+
+            return;
+        }
+        writeData.println("Brand: ");
+
+        writeData.flush();
+
+        var carBrand = readData.readLine();
+
+        writeData.println("Model: ");
+
+        writeData.flush();
+
+        var carModel = readData.readLine();
+
+        writeData.println("Base Price Per Day: ");
+
+        writeData.flush();
+
+        var basePricePerDay = readData.readLine();
+
+        if(carId.isEmpty() || carBrand.isEmpty() || carModel.isEmpty() || basePricePerDay.isEmpty())
+        {
+            writeData.println("\nPlease fill up all the required details to add the car..");
+
+            return;
+        }
+        // Validate base price is a number
+        double basePrice;
+
+        try
+        {
+            basePrice = Double.parseDouble(basePricePerDay);
+        }
+        catch (NumberFormatException e)
+        {
+            writeData.println("\nInvalid input for Base Price Per Day. Please enter a valid number.");
+
+            writeData.flush();
+
+            return;
+        }
         synchronized (cars)
         {
-            if(adminService.carExists(carId,cars))
-            {
-                writeData.println("\nCar with this ID already exists. Please try again with another ID");
-
-                writeData.flush();
-
-                return;
-            }
-            writeData.println("Brand: ");
-
-            writeData.flush();
-
-            var carBrand = readData.readLine();
-
-            writeData.println("Model: ");
-
-            writeData.flush();
-
-            var carModel = readData.readLine();
-
-            writeData.println("Base Price Per Day: ");
-
-            writeData.flush();
-
-            var basePricePerDay = readData.readLine();
-
-            if(carId.isEmpty() || carBrand.isEmpty() || carModel.isEmpty() || basePricePerDay.isEmpty())
-            {
-                writeData.println("\nPlease fill up all the required details to add the car..");
-
-                return;
-            }
-            // Validate base price is a number
-            double basePrice;
-
-            try
-            {
-                basePrice = Double.parseDouble(basePricePerDay);
-            }
-            catch (NumberFormatException e)
-            {
-                writeData.println("\nInvalid input for Base Price Per Day. Please enter a valid number.");
-
-                writeData.flush();
-                return;
-            }
-
             adminService.addCarProcess(cars,carId,carBrand,carModel,basePrice);
 
             writeData.println("\nCar was successfully added");
         }
-
         writeData.flush();
     }
 
