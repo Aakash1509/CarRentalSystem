@@ -12,8 +12,8 @@ import system.CarRentalSystem;
 
 public class CustomerDashboard extends CarRentalSystem
 {
-    //To keep rental Id thread safe
-    private final List<RentalRecord> rentalRecords = new ArrayList<>();
+    //Made it static so that every customer shares it
+    private static final List<RentalRecord> rentalRecords = new ArrayList<>();
 
     private final Customer customer;
 

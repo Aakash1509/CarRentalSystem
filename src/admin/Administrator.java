@@ -1,58 +1,35 @@
 package admin;
 
-import java.util.HashMap;
-
-//This will be a singleton class as I want to create only 1 object of this class
-
 public class Administrator
 {
-    private String username;
+    private static String username;
 
-    private String password;
+    private static String password;
 
-    private final static HashMap<String, String> adminCredentials = new HashMap<>();
-
-    //Private static instance of Singleton
-
-    private static Administrator instance;
-
-    //Private constructor
-
-    private Administrator()
+    public static synchronized boolean registerAdmin(String newUsername, String newPassword)
     {
-
-    }
-
-    //Public static method to provide single instance , synchronized so that at one time only one instance can be created
-
-    public static Administrator getInstance()
-    {
-        if (instance==null)
+        if(username == null && password == null)
         {
-            instance = new Administrator();
-        }
-        return instance;
-    }
+            username = newUsername;
 
-    public static synchronized void registerAdmin(String username, String password)
-    {
-            adminCredentials.put(username, password); // Store username and password in HashMap
-    }
+            password = newPassword;
 
-    public boolean loginAdmin(String username, String password)
-    {
-        if (adminCredentials.containsKey(username) && adminCredentials.get(username).equals(password))
-        {
             return true;
         }
-        else
-        {
-            return false;
-        }
+        return false;
     }
 
-    public boolean exist()
+    public static boolean loginAdmin(String loginUsername, String loginPassword)
     {
-        return !adminCredentials.isEmpty();
+        if(username != null && password !=null)
+        {
+            return username.equals(loginUsername) && password.equals(loginPassword);
+        }
+        return false;
+    }
+
+    public static boolean exist()
+    {
+        return username!=null && password!=null;
     }
 }

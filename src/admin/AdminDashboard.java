@@ -2,6 +2,8 @@ package admin;
 
 import java.io.BufferedReader;
 
+import java.io.IOException;
+
 import java.io.PrintWriter;
 
 import system.CarRentalSystem;
@@ -78,9 +80,16 @@ public class AdminDashboard extends CarRentalSystem
         }
         synchronized (cars)
         {
-            adminService.addCarProcess(cars,carId,carBrand,carModel,basePrice);
+            try
+            {
+                adminService.addCarProcess(cars,carId,carBrand,carModel,basePrice);
 
-            writeData.println("\nCar was successfully added");
+                writeData.println("\nCar was successfully added");
+            }
+            catch (Exception e)
+            {
+                writeData.println("Error occurred while adding a car" + e.getMessage());
+            }
         }
         writeData.flush();
     }
@@ -100,7 +109,6 @@ public class AdminDashboard extends CarRentalSystem
         writeData.println(result);
 
         writeData.flush();
-
     }
 
     public void viewRentedCars(PrintWriter writeData)
@@ -129,7 +137,7 @@ public class AdminDashboard extends CarRentalSystem
 
     //Synchronization required if client is renting a car , admin tries to update car details which is not rented can throw ConcurrentModificationException
 
-    public void updateCarDetails(PrintWriter writeData, BufferedReader readData) throws Exception
+    public void updateCarDetails(PrintWriter writeData, BufferedReader readData) throws IOException
     {
         writeData.println("\nEnter the ID of the car you want to update :\nCar ID: ");
 
@@ -192,7 +200,14 @@ public class AdminDashboard extends CarRentalSystem
 
         synchronized (cars)
         {
-           result = adminService.updateCarProcess(car,newCarBrand,newCarModel,newRentPrice);
+            try
+            {
+                result = adminService.updateCarProcess(car,newCarBrand,newCarModel,newRentPrice);
+            }
+            catch (Exception e)
+            {
+                writeData.println("An error occurred while updating the car details : "+e.getMessage());
+            }
         }
 
         writeData.println(result);

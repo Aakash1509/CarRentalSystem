@@ -16,6 +16,8 @@ import java.io.PrintWriter;
 
 import java.net.Socket;
 
+import customers.Database;
+
 public class ClientHandler implements Runnable
 {
     //for client
@@ -28,7 +30,7 @@ public class ClientHandler implements Runnable
     private PrintWriter writeData;
 
     //For Admin
-    Administrator admin;
+//    Administrator admin;
 
     //For Customer
     Customer customer;
@@ -132,20 +134,18 @@ public class ClientHandler implements Runnable
 
                 if (!username.isEmpty() && !password.isEmpty())
                 {
-                        admin = Administrator.getInstance();
+                    register = Administrator.registerAdmin(username, password);
 
-                        if(!admin.exist())
-                        {
-                            Administrator.registerAdmin(username, password);
+                    if(register)
+                    {
+                        writeData.println("Admin " + username + " registered successfully!");
+                    }
+                    else
+                    {
+                        writeData.println("An admin is already registered. Registration is not allowed");
 
-                            writeData.println("Admin " + username + " registered successfully!");
-                        }
-                        else
-                        {
-                            writeData.println("An admin is already registered. Registration is not allowed");
-
-                            writeData.flush();
-                        }
+                        writeData.flush();
+                    }
                 }
                 else
                 {
@@ -178,9 +178,7 @@ public class ClientHandler implements Runnable
 
                 if (!username.isEmpty() && !password.isEmpty() && !drivingLicenseNumber.isEmpty())
                 {
-                    customer = new Customer(username, password, drivingLicenseNumber);
-
-                    register = customer.registerCustomer(username, password);
+                    register = Database.registerCustomer(username, password, drivingLicenseNumber);
 
                     if(register)
                     {
@@ -212,37 +210,37 @@ public class ClientHandler implements Runnable
 
                 password = readData.readLine();
 
-                try
+                if(!Administrator.exist())
                 {
-                    if (!username.isEmpty() && !password.isEmpty())
+                    writeData.println("No admin found, please register yourself first");
+
+                    writeData.flush();
+
+                    break;
+                }
+                if (!username.isEmpty() && !password.isEmpty())
+                {
+                    login = Administrator.loginAdmin(username, password);
+
+                    if(login)
                     {
-                        login = admin.loginAdmin(username, password);
+                        writeData.println("Login successful! Welcome, " + username);
 
-                        if(login)
-                        {
-                            writeData.println("Login successful! Welcome, " + username);
+                        //After successful login , redirect to AdminDashboard
 
-                            //After successful login , redirect to AdminDashboard
+                        AdminDashboard adminDashboard = new AdminDashboard();
 
-                            AdminDashboard adminDashboard = new AdminDashboard();
-
-                            adminDashboard.showDashboard(writeData, readData);
-                        }
-                        else
-                        {
-                            writeData.println("Invalid username or password. Login again");
-                        }
+                        adminDashboard.showDashboard(writeData, readData);
                     }
                     else
                     {
-                        writeData.println("Don't keep any field empty...Please login again");
+                        writeData.println("Invalid username or password. Login again");
                     }
                 }
-                catch (Exception e)
+                else
                 {
-                    writeData.println("No username found, please register yourself first");
+                    writeData.println("Don't keep any field empty...Please login again");
                 }
-
                 break;
 
             case 4:
@@ -260,13 +258,13 @@ public class ClientHandler implements Runnable
 
                 password = readData.readLine();
 
-                try
+                if (!username.isEmpty() && !password.isEmpty())
                 {
-                    if (!username.isEmpty() && !password.isEmpty())
+                    if(Database.exist(username))
                     {
-                        login = customer.loginCustomer(username, password);
+                        customer = Database.loginCustomer(username, password);
 
-                        if(login)
+                        if(customer!=null)
                         {
                             writeData.println("Login successful! Welcome, " + username);
 
@@ -283,12 +281,12 @@ public class ClientHandler implements Runnable
                     }
                     else
                     {
-                        writeData.println("Don't keep any field empty...Please login again");
+                        writeData.println("No username found , please register first");
                     }
                 }
-                catch (Exception e)
+                else
                 {
-                    writeData.println("No username found, please register yourself first");
+                    writeData.println("Don't keep any field empty...Please login again");
                 }
 
                 break;

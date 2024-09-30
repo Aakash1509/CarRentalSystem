@@ -56,31 +56,39 @@ public abstract class CarRentalSystem
         cars.add(car9);
 
         cars.add(car10);
-
     }
 
-    //Synchronized so that when one thread is iterating other thread doesn't modify
-    public synchronized void viewAvailableCars(PrintWriter writeData)
+    public void viewAvailableCars(PrintWriter writeData)
     {
         writeData.println("\n============= Available Cars in inventory are ==============");
 
         boolean hasAvailableCars = false;
 
-        for (CarDetails car : cars)
+        synchronized (cars) //Synchronized so that when one thread is iterating other thread doesn't modify
         {
-            if (car.isAvailable())
+            for (CarDetails car : cars)
             {
-                hasAvailableCars = true;
+//                try
+//                {
+//                    Thread.sleep(5000);
+//                } catch (InterruptedException e)
+//                {
+//                    throw new RuntimeException(e);
+//                }
+                if (car.isAvailable())
+                {
+                    hasAvailableCars = true;
 
-                writeData.println(car.getCarId() + " - " + car.getCarBrand() + " " + car.getCarModel() + " " + car.getBasePricePerDay() + " ($/day)");
+                    writeData.println(car.getCarId() + " - " + car.getCarBrand() + " " + car.getCarModel() + " " + car.getBasePricePerDay() + " ($/day)");
+                }
             }
-        }
 
-        if(!hasAvailableCars)
-        {
-            writeData.println("No cars available at the moment");
+            if(!hasAvailableCars)
+            {
+                writeData.println("No cars available at the moment");
+            }
+            writeData.flush();
         }
-        writeData.flush();
     }
 
     public abstract void showDashboard(PrintWriter writeData, BufferedReader readData) throws Exception;

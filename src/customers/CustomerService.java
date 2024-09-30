@@ -56,7 +56,7 @@ public class CustomerService
         }
     }
 
-    public String returnCarProcess(List<CarDetails>cars,String rentalId, String username, List<RentalRecord> rentalRecords)
+    public String returnCarProcess(List<CarDetails>cars,String rentalId, String username, List<RentalRecord> rentalRecords) throws Exception
     {
         RentalRecord selectedRental = null;
 
@@ -76,7 +76,8 @@ public class CustomerService
 
         if (selectedRental==null)
         {
-            return "Invalid Rental ID . Please try again";
+//            return "Invalid Rental ID . Please try again";
+            throw new Exception(" Invalid Rental ID . Please try again");
         }
 
         //Need to update Car status also
