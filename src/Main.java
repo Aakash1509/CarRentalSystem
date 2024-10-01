@@ -59,10 +59,12 @@ public class Main
 
     public static void main(String[] args)
     {
-        System.out.println("This is server...Server is going to start");
+        System.out.println("Hello This is server...Server is going to start");
 
         try
         {
+            int x;
+            x= 10;
             var server = new Main();
 
             server.start();
