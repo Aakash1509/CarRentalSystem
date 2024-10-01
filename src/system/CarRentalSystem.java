@@ -7,6 +7,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 
 import java.util.List;
+import java.util.Objects;
 
 //Created abstract class as ArrayList of cars will be shared by both admin and user and menu method can also be override
 public abstract class CarRentalSystem
@@ -60,14 +61,16 @@ public abstract class CarRentalSystem
 
     public void viewAvailableCars(PrintWriter writeData)
     {
-        writeData.println("\n============= Available Cars in inventory are ==============");
-
-        boolean hasAvailableCars = false;
-
-        synchronized (cars) //Synchronized so that when one thread is iterating other thread doesn't modify
+        try
         {
-            for (CarDetails car : cars)
+            writeData.println("\n============= Available Cars in inventory are ==============");
+
+            boolean hasAvailableCars = false;
+
+            synchronized (cars) //Synchronized so that when one thread is iterating other thread doesn't modify
             {
+                for (CarDetails car : cars)
+                {
 //                try
 //                {
 //                    Thread.sleep(5000);
@@ -75,20 +78,53 @@ public abstract class CarRentalSystem
 //                {
 //                    throw new RuntimeException(e);
 //                }
-                if (car.isAvailable())
-                {
-                    hasAvailableCars = true;
+                    if (car.isAvailable())
+                    {
+                        hasAvailableCars = true;
 
-                    writeData.println(car.getCarId() + " - " + car.getCarBrand() + " " + car.getCarModel() + " " + car.getBasePricePerDay() + " ($/day)");
+                        writeData.println(car.getCarId() + " - " + car.getCarBrand() + " " + car.getCarModel() + " " + car.getBasePricePerDay() + " ($/day)");
+                    }
                 }
-            }
 
-            if(!hasAvailableCars)
-            {
-                writeData.println("No cars available at the moment");
+                if(!hasAvailableCars)
+                {
+                    writeData.println("No cars available at the moment");
+                }
+                writeData.flush();
             }
-            writeData.flush();
         }
+        catch (Exception e)
+        {
+            writeData.println("Exception occurred : "+e.getMessage());
+        }
+    }
+
+    //Function to check if car exist or not by car Id
+
+    public static boolean carExists(String carId)
+    {
+        //Check if carId already exists
+
+        for(CarDetails car : cars)
+        {
+            if(car.getCarId().equals(carId))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static CarDetails getCarById(String carId)
+    {
+        for(CarDetails car : cars)
+        {
+            if(Objects.equals(car.getCarId(),carId))
+            {
+                return car;
+            }
+        }
+        return null; //As car is not found with passed ID
     }
 
     public abstract void showDashboard(PrintWriter writeData, BufferedReader readData) throws Exception;

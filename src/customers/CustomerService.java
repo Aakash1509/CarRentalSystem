@@ -1,6 +1,7 @@
 package customers;
 
 import system.CarDetails;
+import system.CarRentalSystem;
 
 import java.util.List;
 
@@ -82,13 +83,15 @@ public class CustomerService
 
         //Need to update Car status also
 
-        CarDetails rentedCar = findCarById(selectedRental.getCarId(),cars);
+        CarDetails rentedCar = CarRentalSystem.getCarById(selectedRental.getCarId());
 
         if (rentedCar!=null)
         {
             synchronized (cars)
             {
                 rentedCar.setAvailable(true);
+
+                rentedCar.setRentedBy(null);
             }
             //Removing from rental records also (Synchronized as multiple clients can work on rentalRecords arraylist)
             synchronized (rentalRecords)
@@ -101,18 +104,6 @@ public class CustomerService
         {
             return "Unable to find the car associated with this rental.";
         }
-    }
-
-    private CarDetails findCarById(String carId, List<CarDetails>cars)
-    {
-        for (CarDetails car : cars)
-        {
-            if (car.getCarId().equals(carId))
-            {
-                return car;
-            }
-        }
-        return null;
     }
 
 }

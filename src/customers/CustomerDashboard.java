@@ -1,5 +1,7 @@
 package customers;
 
+import system.CarRentalSystem;
+
 import java.io.BufferedReader;
 
 import java.io.PrintWriter;
@@ -7,8 +9,6 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 
 import java.util.List;
-
-import system.CarRentalSystem;
 
 public class CustomerDashboard extends CarRentalSystem
 {
@@ -30,47 +30,55 @@ public class CustomerDashboard extends CarRentalSystem
 
     public void rentCar(PrintWriter writeData, BufferedReader readData) throws Exception
     {
-        viewAvailableCars(writeData);
-
-        writeData.println("\nEnter Car Id to rent: ");
-
-        writeData.flush();
-
-        var carId = readData.readLine();
-
-        writeData.println("Enter rental duration (in days): ");
-
-        writeData.flush(); // Ensure the prompt is sent immediately
-
         try
         {
-            var rentalDuration = Integer.parseInt(readData.readLine());
+            viewAvailableCars(writeData);
 
-            RentalRecord record;
+            writeData.println("\nEnter Car Id to rent: ");
 
-            synchronized (cars)
+            writeData.flush();
+
+            var carId = readData.readLine();
+
+            writeData.println("Enter rental duration (in days): ");
+
+            writeData.flush(); // Ensure the prompt is sent immediately
+
+            try
             {
-                record = customerService.rentCarProcess(carId,rentalDuration,cars);
+                var rentalDuration = Integer.parseInt(readData.readLine());
 
-                // Adding rental record in ArrayList
-                rentalRecords.add(record);
+                RentalRecord record;
+
+                synchronized (cars)
+                {
+                    record = customerService.rentCarProcess(carId,rentalDuration,cars);
+
+                    // Adding rental record in ArrayList
+                    rentalRecords.add(record);
+                }
+
+                writeData.println("\nCar rented successfully...");
+
+                writeData.println("Rental Details :");
+
+                writeData.println("Car: " + record.getCarBrand() + " " + record.getCarModel());
+
+                writeData.println("Rental Duration: " + rentalDuration + " days");
+
+                writeData.println("Total Cost: $ " + record.getTotalCost());
             }
-
-            writeData.println("\nCar rented successfully...");
-
-            writeData.println("Rental Details :");
-
-            writeData.println("Car: " + record.getCarBrand() + " " + record.getCarModel());
-
-            writeData.println("Rental Duration: " + rentalDuration + " days");
-
-            writeData.println("Total Cost: $ " + record.getTotalCost());
+            catch (NumberFormatException e)
+            {
+                writeData.println("Invalid input for rental duration. Please enter a valid number.");
+            }
+            writeData.flush(); // Ensure all output is sent to the client
         }
-        catch (NumberFormatException e)
+        catch (Exception e)
         {
-            writeData.println("Invalid input for rental duration. Please enter a valid number.");
+            writeData.println("Exception occurred : "+e.getMessage());
         }
-        writeData.flush(); // Ensure all output is sent to the client
+
 
     }
 
@@ -117,38 +125,45 @@ public class CustomerDashboard extends CarRentalSystem
 
     public void viewRentedCars(PrintWriter writeData)
     {
-        var username = customer.getUsername();
-
-        writeData.println("\n=========== Rented Cars by : " + username + " ===========");
-
-        writeData.flush();
-
-        boolean hasRentedCars = false;
-
-        for (RentalRecord record : rentalRecords)
+        try
         {
-            if (record.getUsername().equals(username))
+            var username = customer.getUsername();
+
+            writeData.println("\n=========== Rented Cars by : " + username + " ===========");
+
+            writeData.flush();
+
+            boolean hasRentedCars = false;
+
+            for (RentalRecord record : rentalRecords)
             {
+                if (record.getUsername().equals(username))
+                {
 
-                writeData.println("Rental Id :" + record.getRentalId());
+                    writeData.println("Rental Id :" + record.getRentalId());
 
-                writeData.println("Car Rented :" + record.getCarBrand() + " " + record.getCarModel());
+                    writeData.println("Car Rented :" + record.getCarBrand() + " " + record.getCarModel());
 
-                writeData.println("Rental Duration :" + record.getRentalDuration());
+                    writeData.println("Rental Duration :" + record.getRentalDuration());
 
-                writeData.println("Total Cost :" + record.getTotalCost());
+                    writeData.println("Total Cost :" + record.getTotalCost());
 
-                writeData.println("-----------------------");
+                    writeData.println("-----------------------");
 
-                hasRentedCars = true;
+                    hasRentedCars = true;
 
+                }
             }
+            if (!hasRentedCars)
+            {
+                writeData.println("\nYou have not rented any cars");
+            }
+            writeData.flush();
         }
-        if (!hasRentedCars)
+        catch (Exception e)
         {
-            writeData.println("\nYou have not rented any cars");
+            writeData.println("Exception occurred : "+e.getMessage());
         }
-        writeData.flush();
     }
 
     @Override

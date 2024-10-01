@@ -31,7 +31,7 @@ public class AdminDashboard extends CarRentalSystem
 
         var carId = readData.readLine();
 
-        if(adminService.carExists(carId,cars))
+        if(CarRentalSystem.carExists(carId))
         {
             writeData.println("\nCar with this ID already exists. Please try again with another ID");
 
@@ -147,7 +147,7 @@ public class AdminDashboard extends CarRentalSystem
 
         CarDetails car = null;
 
-        car = adminService.getCarById(toUpdateCarId,cars);
+        car = CarRentalSystem.getCarById(toUpdateCarId);
 
         if(car == null)
         {

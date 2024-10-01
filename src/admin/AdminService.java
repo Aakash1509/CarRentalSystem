@@ -10,35 +10,6 @@ import java.util.Objects;
 
 public class AdminService
 {
-
-    //Function to check if car exist or not by car Id
-
-    public boolean carExists(String carId, List<CarDetails> cars)
-    {
-        //Check if carId already exists
-
-        for(CarDetails car : cars)
-        {
-            if(car.getCarId().equals(carId))
-            {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public CarDetails getCarById(String carId, List<CarDetails>cars)
-    {
-        for(CarDetails car : cars)
-        {
-            if(Objects.equals(car.getCarId(),carId))
-            {
-                return car;
-            }
-        }
-        return null; //As car is not found with passed ID
-    }
-
     //Processing adding a car
 
     public void addCarProcess(List<CarDetails> cars,String carId, String carBrand, String carModel, double basePricePerDay)
