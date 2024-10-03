@@ -1,4 +1,4 @@
-package customers;
+package server;
 
 public class RentalRecord
 {
@@ -16,7 +16,7 @@ public class RentalRecord
 
     private final double totalCost;
 
-    public RentalRecord(String rentalId, String username, String carId, String carBrand, String carModel, int rentalDuration, double totalCost)
+    public RentalRecord(String rentalId,String username,String carId, String carBrand, String carModel, int rentalDuration, double totalCost)
     {
         this.rentalId = rentalId;
 

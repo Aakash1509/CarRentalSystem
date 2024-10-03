@@ -1,12 +1,8 @@
 package server;
 
-import admin.AdminDashboard;
-
 import admin.Administrator;
 
 import customers.Customer;
-
-import customers.CustomerDashboard;
 
 import java.io.BufferedReader;
 
@@ -16,7 +12,19 @@ import java.io.PrintWriter;
 
 import java.net.Socket;
 
+import java.util.HashMap;
+
+import java.util.List;
+
+import java.util.Map;
+
+import java.util.UUID;
+
 import customers.Database;
+
+import system.CarDetails;
+
+import system.CarRentalSystem;
 
 public class ClientHandler implements Runnable
 {
@@ -29,15 +37,19 @@ public class ClientHandler implements Runnable
     //To write data
     private PrintWriter writeData;
 
-    //For Admin
-//    Administrator admin;
+    private static final Map<String, Customer> tokenStorage = new HashMap<>();
 
-    //For Customer
-    Customer customer;
+    private final CustomerService customerService;
+
+    private final AdminService adminService;
 
     public ClientHandler(Socket clientSocket)
     {
         this.clientSocket = clientSocket;
+
+        this.customerService = new CustomerService();
+
+        this.adminService = new AdminService();
     }
 
     public void run()
@@ -48,7 +60,413 @@ public class ClientHandler implements Runnable
 
             writeData = new PrintWriter(clientSocket.getOutputStream(), true); //If we pass true , auto flush is enabled
 
-            listenClientRequests();
+            String clientMessage;
+
+            while((clientMessage = readData.readLine())!=null)
+            {
+                try
+                {
+                    String[] parts = clientMessage.split(" ");
+
+                    String command = parts[0];
+
+                    var username = "";
+
+                    var register = true;
+
+                    var login = true;
+
+                    var token = "";
+
+                    var response = "";
+
+                    switch (command)
+                    {
+                        case "REGISTER_ADMIN":
+                            try
+                            {
+                                register = Administrator.registerAdmin(parts[1],parts[2]);
+
+                                writeData.println(register ? "true" : "false");
+                            }
+                            catch (Exception e)
+                            {
+                                writeData.println("Fields cannot be empty. Please try again.");
+                            }
+
+                            break;
+
+                        case "REGISTER_CUSTOMER":
+                            try
+                            {
+                                //return the result to the client
+                                register = Database.registerCustomer(parts[1], parts[2], parts[3]);
+
+                                writeData.println(register ? "true" : "false");
+                            }
+                            catch (Exception e)
+                            {
+                                writeData.println("Fields cannot be empty. Please try again.");
+                            }
+
+                            break;
+
+                        case "CUSTOMER_EXIST":
+                            try
+                            {
+                                register = Database.exist(parts[1]);
+
+                                writeData.println(register ? "true" : "false");
+                            }
+                            catch (Exception e)
+                            {
+                                writeData.println("Fields cannot be empty. Please try again.");
+                            }
+                            break;
+
+                        case "LOGIN_ADMIN":
+                            try
+                            {
+                                login = Administrator.loginAdmin(parts[1],parts[2]);
+
+                                if(login)
+                                {
+                                    token = generateToken();
+
+                                    tokenStorage.put(token,null);
+
+                                    writeData.println("LOGIN_SUCCESS token:"+token);
+                                }
+                                else
+                                {
+                                    writeData.println("LOGIN_FAILED");
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                writeData.println("Fields cannot be empty. Please try again.");
+                            }
+
+                            break;
+
+                        case "LOGIN_CUSTOMER":
+                            try
+                            {
+                                Customer customer = Database.loginCustomer(parts[1],parts[2]);
+
+                                if(customer!=null)
+                                {
+                                    token = generateToken();
+
+                                    tokenStorage.put(token,customer);
+
+                                    writeData.println("LOGIN_SUCCESS token:"+token);
+                                }
+                                else
+                                {
+                                    writeData.println("LOGIN_FAILED");
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                writeData.println("Fields cannot be empty. Please try again.");
+                            }
+
+                            break;
+
+                        case "GET_CUSTOMER_DETAILS":
+                            Customer customer1 = tokenStorage.get(parts[1]);
+
+                            if(customer1 != null)
+                            {
+                                response = customer1.getUsername() + " " + customer1.getPassword() + " " + customer1.getDrivingLicenseNumber();
+
+                                writeData.println(response);
+                            }
+                            else
+                            {
+                                writeData.println("INVALID_TOKEN");
+                            }
+                            break;
+
+                        case "VIEW_AVAILABLE_CARS":
+                            try
+                            {
+                                if(tokenStorage.containsKey(parts[1]))
+                                {
+                                    response = CarRentalSystem.viewAvailableCars();
+
+                                    writeData.println(response);
+
+                                    writeData.println("END_OF_LIST");
+                                }
+                                else
+                                {
+                                    writeData.println("INVALID_TOKEN");
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                writeData.println("An error occurred : "+e.getMessage());
+                            }
+                            break;
+
+                        case "RENT_CAR":
+                            try
+                            {
+                                if(tokenStorage.containsKey(parts[1]))
+                                {
+                                    try
+                                    {
+                                        RentalRecord record = customerService.rentCarProcess(parts[2],Integer.parseInt(parts[3]),tokenStorage.get(parts[1]).getUsername());
+
+                                        if(record != null)
+                                        {
+                                            writeData.println("RENTAL_SUCCESS : "+"Rental ID : "+record.getRentalId()+ ", Car Brand : "+record.getCarBrand()+", Car Model : "+record.getCarModel()+", Rental Duration : "+record.getRentalDuration()+", Total Cost : "+record.getTotalCost()+" $");
+                                        }
+                                        else
+                                        {
+                                            writeData.println("Car is unavailable or invalid Car ID. Please try again");
+                                        }
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        writeData.println("RENTAL_FAILED: "+e.getMessage());
+                                    }
+                                }
+                                else
+                                {
+                                    writeData.println("INVALID_TOKEN");
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                writeData.println("Fields cannot be empty. Please try again.");
+                            }
+                            break;
+
+                        case "VIEW_RENTED_CARS":
+                            try
+                            {
+                                if(tokenStorage.containsKey(parts[1]))
+                                {
+                                    username = tokenStorage.get(parts[1]).getUsername();
+
+                                    List<RentalRecord> recordList = customerService.rentedCars(username);
+
+                                    if(recordList.isEmpty())
+                                    {
+                                        writeData.println("You have not rented any cars");
+
+                                        writeData.println("END_OF_LIST");
+                                    }
+                                    else
+                                    {
+                                        for(RentalRecord record : recordList)
+                                        {
+                                            writeData.println("Rental ID: "+record.getRentalId()+", Car Rented: "+record.getCarBrand()+" "+record.getCarModel()+", Rental Duration: "+record.getRentalDuration()+ ", Total Cost: "+record.getTotalCost()+" $");
+
+                                        }
+                                        writeData.println("END_OF_LIST");
+                                    }
+                                }
+                                else
+                                {
+                                    writeData.println("INVALID_TOKEN");
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                writeData.println("An error occurred : "+e.getMessage());
+                            }
+
+                            break;
+
+                        case "VIEW_RENTED_CARS_ADMIN":
+                            try
+                            {
+                                if(tokenStorage.containsKey(parts[1]))
+                                {
+                                    var recordList = adminService.rentedCars();
+
+                                    if(recordList.isEmpty())
+                                    {
+                                        writeData.println("There are not rented any cars");
+
+                                        writeData.println("END_OF_LIST");
+                                    }
+                                    else
+                                    {
+                                        for(CarDetails record : recordList)
+                                        {
+                                            writeData.println(record.getCarId() + " - " + record.getCarBrand() + " " + record.getCarModel() + " is rented by "+ record.getRentedBy());
+
+                                        }
+                                        writeData.println("END_OF_LIST");
+                                    }
+                                }
+                                else
+                                {
+                                    writeData.println("INVALID_TOKEN");
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                writeData.println("An error occurred : "+e.getMessage());
+                            }
+
+                            break;
+
+                        case "RETURN_CAR":
+                            try
+                            {
+                                username = tokenStorage.get(parts[1]).getUsername();
+
+                                if(tokenStorage.containsKey(parts[1]))
+                                {
+                                    response = customerService.returnCarProcess(parts[2],username);
+
+                                    writeData.println(response);
+                                }
+                                else
+                                {
+                                    writeData.println("INVALID_TOKEN");
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                writeData.println("Fields cannot be empty. Please try again.");
+                            }
+                            break;
+
+                        case "ADD_CAR":
+                            try
+                            {
+                                if(tokenStorage.containsKey(parts[1]))
+                                {
+                                    if(CarRentalSystem.carExists(parts[2]))
+                                    {
+                                        writeData.println("Car with this ID already exists. Please try again with another ID");
+                                    }
+                                    else
+                                    {
+                                        adminService.addCarProcess(parts[2],parts[3],parts[4],Double.parseDouble(parts[5]));
+
+                                        writeData.println("Car was successfully added");
+                                    }
+                                }
+                                else
+                                {
+                                    writeData.println("INVALID_TOKEN");
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                writeData.println("Fields cannot be empty. Please try again.");
+                            }
+
+                            break;
+
+                        case "REMOVE_CAR":
+                            try
+                            {
+                                if(tokenStorage.containsKey(parts[1]))
+                                {
+                                    var result = adminService.removeCarProcess(parts[2]);
+
+                                    writeData.println(result);
+                                }
+                                else
+                                {
+                                    writeData.println("INVALID_TOKEN");
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                writeData.println("Fields cannot be empty. Please try again.");
+                            }
+                            break;
+
+                        case "CAR_EXIST":
+                            try
+                            {
+                                if(tokenStorage.containsKey(parts[1]))
+                                {
+                                    var result = CarRentalSystem.carExists(parts[2]);
+
+                                    writeData.println(result ? "true" : "false");
+                                }
+                                else
+                                {
+                                    writeData.println("INVALID_TOKEN");
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                writeData.println("Fields cannot be empty. Please try again.");
+                            }
+
+                            break;
+
+                        case "CAR_AVAILABLE":
+                            try
+                            {
+                                if(tokenStorage.containsKey(parts[1]))
+                                {
+                                    var result = CarRentalSystem.isCarAvailable(parts[2]);
+
+                                    if(result == null)
+                                    {
+                                        writeData.println("false");
+                                    }
+                                    else
+                                    {
+                                        writeData.println("Current Details : "+"Car Brand : "+result.getCarBrand()+" Car Model : "+result.getCarModel()+" Base Price : "+result.getBasePricePerDay()+" $");
+                                    }
+                                }
+                                else
+                                {
+                                    writeData.println("INVALID_TOKEN");
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                writeData.println("Fields cannot be empty. Please try again.");
+                            }
+
+                            break;
+
+                        case "UPDATE_CAR":
+                            try
+                            {
+                                if(tokenStorage.containsKey(parts[1]))
+                                {
+                                    response = adminService.updateCarProcess(parts[2],parts[3],parts[4],parts[5]);
+
+                                    writeData.println(response);
+                                }
+                                else
+                                {
+                                    writeData.println("INVALID_TOKEN");
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                writeData.println("Fields cannot be empty. Please try again.");
+                            }
+
+                            break;
+
+                        default:
+
+                            writeData.println("ERROR. No such command "+command);
+                    }
+                }
+                catch (Exception e)
+                {
+                    System.out.println("An exception occurred here : "+e.getMessage());
+                }
+            }
         }
         catch (Exception e)
         {
@@ -59,248 +477,9 @@ public class ClientHandler implements Runnable
             closeConnection();
         }
     }
-
-    private void listenClientRequests()
+    private String generateToken()
     {
-        int choice = 0;
-
-        writeData.println("====== Welcome to Car Rental System ======");
-
-        do
-        {
-            writeData.println();
-
-            writeData.println("1. Register Admin");
-
-            writeData.println("2. Register Customer");
-
-            writeData.println("3. Login Admin");
-
-            writeData.println("4. Login Customer");
-
-            writeData.println("5. Exit");
-
-            writeData.println("Enter your choice: ");
-
-            //writeData.flush(); //Bcoz print doesn't use automatic flush
-
-            try
-            {
-                choice = Integer.parseInt(readData.readLine());
-
-                try
-                {
-                    handleClientRequest(choice);
-                }
-                catch (Exception e)
-                {
-                    System.out.println("Error occurred : "+e.getMessage());
-                }
-
-            }
-            catch (Exception e)
-            {
-                writeData.println("Invalid data...Please enter a number between 1 to 5");
-            }
-        } while (choice!=5);
-    }
-
-    private void handleClientRequest(int choice) throws Exception
-    {
-        var username = "";
-
-        var password = "";
-
-        var login = true;
-
-        var register = true;
-
-        switch (choice)
-        {
-            case 1:
-                // Admin Registration
-
-                writeData.println("Enter Admin Details:\nUsername: ");
-
-                writeData.flush();
-
-                username = readData.readLine();
-
-                writeData.println("Password: ");
-
-                writeData.flush();
-
-                password = readData.readLine();
-
-                if (!username.isEmpty() && !password.isEmpty())
-                {
-                    register = Administrator.registerAdmin(username, password);
-
-                    if(register)
-                    {
-                        writeData.println("Admin " + username + " registered successfully!");
-                    }
-                    else
-                    {
-                        writeData.println("An admin is already registered. Registration is not allowed");
-
-                        writeData.flush();
-                    }
-                }
-                else
-                {
-                    writeData.println("Don't keep any field empty...Please register again");
-
-                    writeData.flush();
-                }
-                break;
-
-            case 2:
-                // Customer Registration
-
-                writeData.println("Enter Customer Details:\nUsername: ");
-
-                writeData.flush();
-
-                username = readData.readLine();
-
-                writeData.println("Password: ");
-
-                writeData.flush();
-
-                password = readData.readLine();
-
-                writeData.println("Driver license number: ");
-
-                writeData.flush();
-
-                var drivingLicenseNumber = readData.readLine();
-
-                if (!username.isEmpty() && !password.isEmpty() && !drivingLicenseNumber.isEmpty())
-                {
-                    register = Database.registerCustomer(username, password, drivingLicenseNumber);
-
-                    if(register)
-                    {
-                        writeData.println("Customer " + username + " registered successfully!");
-                    }
-                    else
-                    {
-                        writeData.println("This username already exists. Please register using other username");
-                    }
-                }
-                else
-                {
-                    writeData.println("Don't keep any field empty...Please register again");
-                }
-                break;
-
-            case 3:
-                // Admin Login
-
-                writeData.println("Admin Username: ");
-
-                writeData.flush();
-
-                username = readData.readLine();
-
-                writeData.println("Admin Password: ");
-
-                writeData.flush();
-
-                password = readData.readLine();
-
-                if(!Administrator.exist())
-                {
-                    writeData.println("No admin found, please register yourself first");
-
-                    writeData.flush();
-
-                    break;
-                }
-                if (!username.isEmpty() && !password.isEmpty())
-                {
-                    login = Administrator.loginAdmin(username, password);
-
-                    if(login)
-                    {
-                        writeData.println("Login successful! Welcome, " + username);
-
-                        //After successful login , redirect to AdminDashboard
-
-                        AdminDashboard adminDashboard = new AdminDashboard();
-
-                        adminDashboard.showDashboard(writeData, readData);
-                    }
-                    else
-                    {
-                        writeData.println("Invalid username or password. Login again");
-                    }
-                }
-                else
-                {
-                    writeData.println("Don't keep any field empty...Please login again");
-                }
-                break;
-
-            case 4:
-                // Customer Login
-
-                writeData.println("Customer Username: ");
-
-                writeData.flush();
-
-                username = readData.readLine();
-
-                writeData.println("Customer Password: ");
-
-                writeData.flush();
-
-                password = readData.readLine();
-
-                if (!username.isEmpty() && !password.isEmpty())
-                {
-                    if(Database.exist(username))
-                    {
-                        customer = Database.loginCustomer(username, password);
-
-                        if(customer!=null)
-                        {
-                            writeData.println("Login successful! Welcome, " + username);
-
-                            //After successful login , redirect to CustomerDashboard
-
-                            CustomerDashboard customerDashboard = new CustomerDashboard(customer);
-
-                            customerDashboard.showDashboard(writeData, readData);
-                        }
-                        else
-                        {
-                            writeData.println("Invalid username or password.");
-                        }
-                    }
-                    else
-                    {
-                        writeData.println("No username found , please register first");
-                    }
-                }
-                else
-                {
-                    writeData.println("Don't keep any field empty...Please login again");
-                }
-
-                break;
-
-            case 5:
-                writeData.println("Exiting the system.");
-
-                writeData.println("exit");
-
-                break;
-
-            default:
-                writeData.println("Invalid choice. Please try again.");
-        }
+        return UUID.randomUUID().toString();
     }
 
     private void closeConnection()

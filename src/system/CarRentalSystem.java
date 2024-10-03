@@ -1,16 +1,12 @@
 package system;
 
-import java.io.BufferedReader;
-
-import java.io.PrintWriter;
-
 import java.util.ArrayList;
 
 import java.util.List;
+
 import java.util.Objects;
 
-//Created abstract class as ArrayList of cars will be shared by both admin and user and menu method can also be override
-public abstract class CarRentalSystem
+public class CarRentalSystem
 {
     //Made it static so both admin and customers share it
     public static final List<CarDetails> cars = new ArrayList<>();
@@ -59,11 +55,13 @@ public abstract class CarRentalSystem
         cars.add(car10);
     }
 
-    public void viewAvailableCars(PrintWriter writeData)
+    public static String viewAvailableCars()
     {
+        StringBuilder carList = new StringBuilder();
+
         try
         {
-            writeData.println("\n============= Available Cars in inventory are ==============");
+            carList.append("\n============= Available Cars in inventory are ==============\n");
 
             boolean hasAvailableCars = false;
 
@@ -82,21 +80,22 @@ public abstract class CarRentalSystem
                     {
                         hasAvailableCars = true;
 
-                        writeData.println(car.getCarId() + " - " + car.getCarBrand() + " " + car.getCarModel() + " " + car.getBasePricePerDay() + " ($/day)");
+                        carList.append(car.getCarId()).append(" - ").append(car.getCarBrand()).append(" ").append(car.getCarModel())
+                                .append(" ").append(car.getBasePricePerDay()).append(" ($/day)\n");
                     }
                 }
 
                 if(!hasAvailableCars)
                 {
-                    writeData.println("No cars available at the moment");
+                    carList.append("No cars available at the moment");
                 }
-                writeData.flush();
             }
         }
         catch (Exception e)
         {
-            writeData.println("Exception occurred : "+e.getMessage());
+            System.out.println("Exception occurred : "+e.getMessage());
         }
+        return carList.toString();
     }
 
     //Function to check if car exist or not by car Id
@@ -127,5 +126,26 @@ public abstract class CarRentalSystem
         return null; //As car is not found with passed ID
     }
 
-    public abstract void showDashboard(PrintWriter writeData, BufferedReader readData) throws Exception;
+    public static CarDetails isCarAvailable(String carId)
+    {
+        CarDetails car = getCarById(carId);
+
+        if(car != null && car.isAvailable())
+        {
+            return car;
+        }
+        return null;
+        /*
+        for(CarDetails car : cars)
+        {
+            if(Objects.equals(car.getCarId(),carId) && car.isAvailable())
+            {
+                return car;
+            }
+        }
+
+        return null; //As car is not found with passed ID
+
+         */
+    }
 }

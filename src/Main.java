@@ -1,7 +1,5 @@
 import server.ClientHandler;
 
-import java.io.IOException;
-
 import java.net.ServerSocket;
 
 import java.net.Socket;
@@ -63,8 +61,6 @@ public class Main
 
         try
         {
-            int x;
-            x= 10;
             var server = new Main();
 
             server.start();
