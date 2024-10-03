@@ -36,7 +36,8 @@ public class ClientHandler implements Runnable
 
     //To write data
     private PrintWriter writeData;
-
+    
+    //Hashmap which stores token and Customer object as key value pair
     private static final Map<String, Customer> tokenStorage = new HashMap<>();
 
     private final CustomerService customerService;
@@ -66,6 +67,7 @@ public class ClientHandler implements Runnable
             {
                 try
                 {
+                    //Splitting client message
                     String[] parts = clientMessage.split(" ");
 
                     String command = parts[0];
@@ -457,6 +459,21 @@ public class ClientHandler implements Runnable
 
                             break;
 
+                        case "LOGOUT":
+                            try
+                            {
+                                if(tokenStorage.containsKey(parts[1]))
+                                {
+                                    tokenStorage.remove(parts[1]);
+
+                                    writeData.println("LOGGED OUT SUCCESSFULLY");
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                writeData.println("An error occurred : "+e.getMessage());
+                            }
+
                         default:
 
                             writeData.println("ERROR. No such command "+command);
@@ -477,6 +494,8 @@ public class ClientHandler implements Runnable
             closeConnection();
         }
     }
+    
+    //Function to generate token
     private String generateToken()
     {
         return UUID.randomUUID().toString();

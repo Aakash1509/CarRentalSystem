@@ -27,9 +27,4 @@ public class Administrator
         }
         return false;
     }
-
-    public static boolean exist()
-    {
-        return username!=null && password!=null;
-    }
 }

@@ -23,8 +23,6 @@ public class Client
     //To read input from user
     protected Scanner scanner;
 
-    private String token = null;
-
     public Client()
     {
         scanner = new Scanner(System.in);
@@ -99,6 +97,8 @@ public class Client
         var username = "";
 
         var password = "";
+
+        String token;
 
         switch (choice)
         {

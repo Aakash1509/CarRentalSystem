@@ -18,13 +18,11 @@ public class CustomerService
 
     private static final List<RentalRecord> rentalRecords = new ArrayList<>();
 
-    // Constructor
-
-    public RentalRecord rentCarProcess(String carId , int rentalDuration,String username) throws Exception
+    public RentalRecord rentCarProcess(String carId , int rentalDuration,String username)
     {
         synchronized (cars)
         {
-            CarDetails selectedCar = null;
+            CarDetails selectedCar;
 
             //Find selected car
 
@@ -77,7 +75,6 @@ public class CustomerService
 
         if (selectedRental==null)
         {
-//            return "Invalid Rental ID . Please try again";
             return "Unable to find the car associated with this rental.";
         }
 

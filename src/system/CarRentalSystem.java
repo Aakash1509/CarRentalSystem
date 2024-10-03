@@ -102,8 +102,6 @@ public class CarRentalSystem
 
     public static boolean carExists(String carId)
     {
-        //Check if carId already exists
-
         for(CarDetails car : cars)
         {
             if(car.getCarId().equals(carId))
@@ -135,17 +133,5 @@ public class CarRentalSystem
             return car;
         }
         return null;
-        /*
-        for(CarDetails car : cars)
-        {
-            if(Objects.equals(car.getCarId(),carId) && car.isAvailable())
-            {
-                return car;
-            }
-        }
-
-        return null; //As car is not found with passed ID
-
-         */
     }
 }

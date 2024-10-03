@@ -287,7 +287,22 @@ public class AdminDashboard extends Client
                             break;
 
                         case 6:
-                            System.out.println("Logging out.");
+                            try
+                            {
+                                initializeConnection();
+
+                                serverOutput.println("LOGOUT "+token); //Need to remove token after logging out
+
+                                System.out.println(serverInput.readLine());
+                            }
+                            catch (Exception e)
+                            {
+                                System.out.println("An error occurred : "+e.getMessage());
+                            }
+                            finally
+                            {
+                                closeConnection();
+                            }
 
                             break;
 

@@ -1,7 +1,5 @@
 package client;
 
-import system.CarRentalSystem;
-
 public class CustomerDashboard extends Client
 {
     String token;
@@ -25,7 +23,6 @@ public class CustomerDashboard extends Client
 
             try
             {
-//                var rentalDuration = Integer.parseInt(scanner.nextLine());
                 var rentalDuration = scanner.nextLine();
 
                 if(carId.isEmpty() || rentalDuration.isEmpty())
@@ -73,7 +70,7 @@ public class CustomerDashboard extends Client
             // Use the return value to check if there are any rented cars
             if (!processRent())
             {
-                return;  // Exit early if no cars are rented
+                return;
             }
 
             closeConnection();
@@ -237,7 +234,22 @@ public class CustomerDashboard extends Client
                             break;
 
                         case 5:
-                            System.out.println("Logging out.");
+                            try
+                            {
+                                initializeConnection();
+
+                                serverOutput.println("LOGOUT "+token); //Need to remove token after logging out
+
+                                System.out.println(serverInput.readLine());
+                            }
+                            catch (Exception e)
+                            {
+                                System.out.println("An error occurred : "+e.getMessage());
+                            }
+                            finally
+                            {
+                                closeConnection();
+                            }
 
                             break;
 
