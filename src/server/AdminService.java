@@ -7,6 +7,7 @@ import system.CarRentalSystem;
 import java.util.ArrayList;
 
 import java.util.List;
+import java.util.Map;
 
 import static system.CarRentalSystem.cars;
 
@@ -18,7 +19,7 @@ public class AdminService
     {
         synchronized (cars)
         {
-            cars.add(new CarDetails(carId, carBrand, carModel, basePricePerDay));
+            cars.put(carId,new CarDetails(carBrand,carModel,basePricePerDay));
         }
     }
 
@@ -40,7 +41,7 @@ public class AdminService
                 {
                     return "Cannot remove car with ID "+ carId + " because car is currently rented";
                 }
-                cars.remove(car);
+                cars.remove(carId);
 
                 return "Car with ID " + carId + " removed successfully.";
             }
@@ -105,15 +106,19 @@ public class AdminService
 
     }
 
-    public List<CarDetails> rentedCars()
+    public List<String> rentedCars()
     {
-        List<CarDetails> records = new ArrayList<>();
+        List<String> records = new ArrayList<>();
 
-        for(CarDetails car : cars)
+        for(Map.Entry<String,CarDetails> entry : cars.entrySet())
         {
+            var car = entry.getValue();
+
+            var carID = entry.getKey();
+
             if(!car.isAvailable())
             {
-                records.add(car);
+                records.add(carID + " - " + car.getCarBrand() + " " + car.getCarModel() + " is rented by "+car.getRentedBy());
             }
         }
         return records;

@@ -47,7 +47,7 @@ public class CustomerService
 
                 // Create an object of RentalRecord class
 
-                RentalRecord record = new RentalRecord(rentalId,username,selectedCar.getCarId(), selectedCar.getCarBrand(), selectedCar.getCarModel(), rentalDuration, totalCost);
+                RentalRecord record = new RentalRecord(rentalId,username, carId, selectedCar.getCarBrand(), selectedCar.getCarModel(), rentalDuration, totalCost);
 
                 rentalRecords.add(record);
 

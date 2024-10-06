@@ -18,9 +18,9 @@ public class CarDetails
 
     private String rentedBy;
 
-    public CarDetails(String carId, String carBrand, String carModel, double basePricePerDay)
+    public CarDetails(String carBrand, String carModel, double basePricePerDay)
     {
-        this.carId = carId;
+//        this.carId = carId;
 
         this.carBrand = carBrand;
 

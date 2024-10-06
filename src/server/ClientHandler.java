@@ -22,8 +22,6 @@ import java.util.UUID;
 
 import customers.Database;
 
-import system.CarDetails;
-
 import system.CarRentalSystem;
 
 public class ClientHandler implements Runnable
@@ -194,18 +192,11 @@ public class ClientHandler implements Runnable
                         case "VIEW_AVAILABLE_CARS":
                             try
                             {
-                                if(tokenStorage.containsKey(parts[1]))
-                                {
-                                    response = CarRentalSystem.viewAvailableCars();
+                                response = CarRentalSystem.viewAvailableCars();
 
-                                    writeData.println(response);
+                                writeData.println(response);
 
-                                    writeData.println("END_OF_LIST");
-                                }
-                                else
-                                {
-                                    writeData.println("INVALID_TOKEN");
-                                }
+                                writeData.println("END_OF_LIST");
                             }
                             catch (Exception e)
                             {
@@ -216,29 +207,22 @@ public class ClientHandler implements Runnable
                         case "RENT_CAR":
                             try
                             {
-                                if(tokenStorage.containsKey(parts[1]))
+                                try
                                 {
-                                    try
-                                    {
-                                        RentalRecord record = customerService.rentCarProcess(parts[2],Integer.parseInt(parts[3]),tokenStorage.get(parts[1]).getUsername());
+                                    RentalRecord record = customerService.rentCarProcess(parts[2],Integer.parseInt(parts[3]),tokenStorage.get(parts[1]).getUsername());
 
-                                        if(record != null)
-                                        {
-                                            writeData.println("RENTAL_SUCCESS : "+"Rental ID : "+record.getRentalId()+ ", Car Brand : "+record.getCarBrand()+", Car Model : "+record.getCarModel()+", Rental Duration : "+record.getRentalDuration()+", Total Cost : "+record.getTotalCost()+" $");
-                                        }
-                                        else
-                                        {
-                                            writeData.println("Car is unavailable or invalid Car ID. Please try again");
-                                        }
-                                    }
-                                    catch (Exception e)
+                                    if(record != null)
                                     {
-                                        writeData.println("RENTAL_FAILED: "+e.getMessage());
+                                        writeData.println("RENTAL_SUCCESS : "+"Rental ID : "+record.getRentalId()+ ", Car Brand : "+record.getCarBrand()+", Car Model : "+record.getCarModel()+", Rental Duration : "+record.getRentalDuration()+", Total Cost : "+record.getTotalCost()+" $");
+                                    }
+                                    else
+                                    {
+                                        writeData.println("Car is unavailable or invalid Car ID. Please try again");
                                     }
                                 }
-                                else
+                                catch (Exception e)
                                 {
-                                    writeData.println("INVALID_TOKEN");
+                                    writeData.println("RENTAL_FAILED: "+e.getMessage());
                                 }
                             }
                             catch (Exception e)
@@ -250,31 +234,23 @@ public class ClientHandler implements Runnable
                         case "VIEW_RENTED_CARS":
                             try
                             {
-                                if(tokenStorage.containsKey(parts[1]))
+                                username = tokenStorage.get(parts[1]).getUsername();
+
+                                List<RentalRecord> recordList = customerService.rentedCars(username);
+
+                                if(recordList.isEmpty())
                                 {
-                                    username = tokenStorage.get(parts[1]).getUsername();
+                                    writeData.println("You have not rented any cars");
 
-                                    List<RentalRecord> recordList = customerService.rentedCars(username);
-
-                                    if(recordList.isEmpty())
-                                    {
-                                        writeData.println("You have not rented any cars");
-
-                                        writeData.println("END_OF_LIST");
-                                    }
-                                    else
-                                    {
-                                        for(RentalRecord record : recordList)
-                                        {
-                                            writeData.println("Rental ID: "+record.getRentalId()+", Car Rented: "+record.getCarBrand()+" "+record.getCarModel()+", Rental Duration: "+record.getRentalDuration()+ ", Total Cost: "+record.getTotalCost()+" $");
-
-                                        }
-                                        writeData.println("END_OF_LIST");
-                                    }
+                                    writeData.println("END_OF_LIST");
                                 }
                                 else
                                 {
-                                    writeData.println("INVALID_TOKEN");
+                                    for(RentalRecord record : recordList)
+                                    {
+                                        writeData.println("Rental ID: "+record.getRentalId()+", Car Rented: "+record.getCarBrand()+" "+record.getCarModel()+", Rental Duration: "+record.getRentalDuration()+ ", Total Cost: "+record.getTotalCost()+" $");
+                                    }
+                                    writeData.println("END_OF_LIST");
                                 }
                             }
                             catch (Exception e)
@@ -287,29 +263,21 @@ public class ClientHandler implements Runnable
                         case "VIEW_RENTED_CARS_ADMIN":
                             try
                             {
-                                if(tokenStorage.containsKey(parts[1]))
+                                var recordList = adminService.rentedCars();
+
+                                if(recordList.isEmpty())
                                 {
-                                    var recordList = adminService.rentedCars();
+                                    writeData.println("There are not rented any cars");
 
-                                    if(recordList.isEmpty())
-                                    {
-                                        writeData.println("There are not rented any cars");
-
-                                        writeData.println("END_OF_LIST");
-                                    }
-                                    else
-                                    {
-                                        for(CarDetails record : recordList)
-                                        {
-                                            writeData.println(record.getCarId() + " - " + record.getCarBrand() + " " + record.getCarModel() + " is rented by "+ record.getRentedBy());
-
-                                        }
-                                        writeData.println("END_OF_LIST");
-                                    }
+                                    writeData.println("END_OF_LIST");
                                 }
                                 else
                                 {
-                                    writeData.println("INVALID_TOKEN");
+                                    for(String record : recordList)
+                                    {
+                                        writeData.println(record);
+                                    }
+                                    writeData.println("END_OF_LIST");
                                 }
                             }
                             catch (Exception e)
@@ -324,16 +292,9 @@ public class ClientHandler implements Runnable
                             {
                                 username = tokenStorage.get(parts[1]).getUsername();
 
-                                if(tokenStorage.containsKey(parts[1]))
-                                {
-                                    response = customerService.returnCarProcess(parts[2],username);
+                                response = customerService.returnCarProcess(parts[2],username);
 
-                                    writeData.println(response);
-                                }
-                                else
-                                {
-                                    writeData.println("INVALID_TOKEN");
-                                }
+                                writeData.println(response);
                             }
                             catch (Exception e)
                             {
@@ -344,22 +305,15 @@ public class ClientHandler implements Runnable
                         case "ADD_CAR":
                             try
                             {
-                                if(tokenStorage.containsKey(parts[1]))
+                                if(CarRentalSystem.carExists(parts[2]))
                                 {
-                                    if(CarRentalSystem.carExists(parts[2]))
-                                    {
-                                        writeData.println("Car with this ID already exists. Please try again with another ID");
-                                    }
-                                    else
-                                    {
-                                        adminService.addCarProcess(parts[2],parts[3],parts[4],Double.parseDouble(parts[5]));
-
-                                        writeData.println("Car was successfully added");
-                                    }
+                                    writeData.println("Car with this ID already exists. Please try again with another ID");
                                 }
                                 else
                                 {
-                                    writeData.println("INVALID_TOKEN");
+                                    adminService.addCarProcess(parts[2],parts[3],parts[4],Double.parseDouble(parts[5]));
+
+                                    writeData.println("Car was successfully added");
                                 }
                             }
                             catch (Exception e)
@@ -372,16 +326,9 @@ public class ClientHandler implements Runnable
                         case "REMOVE_CAR":
                             try
                             {
-                                if(tokenStorage.containsKey(parts[1]))
-                                {
-                                    var result = adminService.removeCarProcess(parts[2]);
+                                var result = adminService.removeCarProcess(parts[2]);
 
-                                    writeData.println(result);
-                                }
-                                else
-                                {
-                                    writeData.println("INVALID_TOKEN");
-                                }
+                                writeData.println(result);
                             }
                             catch (Exception e)
                             {
@@ -392,16 +339,9 @@ public class ClientHandler implements Runnable
                         case "CAR_EXIST":
                             try
                             {
-                                if(tokenStorage.containsKey(parts[1]))
-                                {
-                                    var result = CarRentalSystem.carExists(parts[2]);
+                                var result = CarRentalSystem.carExists(parts[2]);
 
-                                    writeData.println(result ? "true" : "false");
-                                }
-                                else
-                                {
-                                    writeData.println("INVALID_TOKEN");
-                                }
+                                writeData.println(result ? "true" : "false");
                             }
                             catch (Exception e)
                             {
@@ -413,22 +353,15 @@ public class ClientHandler implements Runnable
                         case "CAR_AVAILABLE":
                             try
                             {
-                                if(tokenStorage.containsKey(parts[1]))
-                                {
-                                    var result = CarRentalSystem.isCarAvailable(parts[2]);
+                                var result = CarRentalSystem.isCarAvailable(parts[2]);
 
-                                    if(result == null)
-                                    {
-                                        writeData.println("false");
-                                    }
-                                    else
-                                    {
-                                        writeData.println("Current Details : "+"Car Brand : "+result.getCarBrand()+" Car Model : "+result.getCarModel()+" Base Price : "+result.getBasePricePerDay()+" $");
-                                    }
+                                if(result == null)
+                                {
+                                    writeData.println("false");
                                 }
                                 else
                                 {
-                                    writeData.println("INVALID_TOKEN");
+                                    writeData.println("Current Details : "+"Car Brand : "+result.getCarBrand()+" Car Model : "+result.getCarModel()+" Base Price : "+result.getBasePricePerDay()+" $");
                                 }
                             }
                             catch (Exception e)
@@ -441,16 +374,10 @@ public class ClientHandler implements Runnable
                         case "UPDATE_CAR":
                             try
                             {
-                                if(tokenStorage.containsKey(parts[1]))
-                                {
-                                    response = adminService.updateCarProcess(parts[2],parts[3],parts[4],parts[5]);
+                                response = adminService.updateCarProcess(parts[2],parts[3],parts[4],parts[5]);
 
-                                    writeData.println(response);
-                                }
-                                else
-                                {
-                                    writeData.println("INVALID_TOKEN");
-                                }
+                                writeData.println(response);
+
                             }
                             catch (Exception e)
                             {

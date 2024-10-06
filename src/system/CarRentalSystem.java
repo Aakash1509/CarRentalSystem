@@ -1,58 +1,36 @@
 package system;
 
-import java.util.ArrayList;
-
-import java.util.List;
-
-import java.util.Objects;
+import java.util.*;
 
 public class CarRentalSystem
 {
     //Made it static so both admin and customers share it
-    public static final List<CarDetails> cars = new ArrayList<>();
+//    public static final List<CarDetails> cars = new ArrayList<>();
+
+    public static final Map<String,CarDetails> cars = new LinkedHashMap<>();
 
     //Initializer block (cars.add() method should not be outside any method or block)
     static
     {
-        CarDetails car1 = new CarDetails("C001", "Ford", "Mustang", 1500);
+        cars.put("C001",new CarDetails("Ford", "Mustang", 1500));
 
-        CarDetails car2 = new CarDetails("C002", "Mahindra", "Thar", 2000);
+        cars.put("C002",new CarDetails("Mahindra", "Thar", 2000));
 
-        CarDetails car3 = new CarDetails("C003", "Tata", "Nexon", 1500);
+        cars.put("C003",new CarDetails("Tata", "Nexon", 1500));
 
-        CarDetails car4 = new CarDetails("C004", "Hyundai", "Creta", 1800);
+        cars.put("C004",new CarDetails("Hyundai", "Creta", 1800));
 
-        CarDetails car5 = new CarDetails("C005", "Toyota", "Fortuner", 2200);
+        cars.put("C005",new CarDetails("Toyota", "Fortuner", 2200));
 
-        CarDetails car6 = new CarDetails("C006", "Maruti", "Swift", 1300);
+        cars.put("C006",new CarDetails("Maruti", "Swift", 1300));
 
-        CarDetails car7 = new CarDetails("C007", "Honda", "City", 1400);
+        cars.put("C007",new CarDetails("Honda", "City", 1400));
 
-        CarDetails car8 = new CarDetails("C008", "Kia", "Seltos", 1600);
+        cars.put("C008",new CarDetails("Kia", "Seltos", 1600));
 
-        CarDetails car9 = new CarDetails("C009", "Jeep", "Compass", 1900);
+        cars.put("C009",new CarDetails("Jeep", "Compass", 1900));
 
-        CarDetails car10 = new CarDetails("C010", "BMW", "X5", 3000);
-
-        cars.add(car1);
-
-        cars.add(car2);
-
-        cars.add(car3);
-
-        cars.add(car4);
-
-        cars.add(car5);
-
-        cars.add(car6);
-
-        cars.add(car7);
-
-        cars.add(car8);
-
-        cars.add(car9);
-
-        cars.add(car10);
+        cars.put("C010",new CarDetails("BMW", "X5", 3000));
     }
 
     public static String viewAvailableCars()
@@ -67,8 +45,11 @@ public class CarRentalSystem
 
             synchronized (cars) //Synchronized so that when one thread is iterating other thread doesn't modify
             {
-                for (CarDetails car : cars)
+                for (Map.Entry<String,CarDetails> entry : cars.entrySet())
                 {
+                    var carID = entry.getKey();
+
+                    var car = entry.getValue();
 //                try
 //                {
 //                    Thread.sleep(5000);
@@ -80,7 +61,7 @@ public class CarRentalSystem
                     {
                         hasAvailableCars = true;
 
-                        carList.append(car.getCarId()).append(" - ").append(car.getCarBrand()).append(" ").append(car.getCarModel())
+                        carList.append(carID).append(" - ").append(car.getCarBrand()).append(" ").append(car.getCarModel())
                                 .append(" ").append(car.getBasePricePerDay()).append(" ($/day)\n");
                     }
                 }
@@ -102,26 +83,12 @@ public class CarRentalSystem
 
     public static boolean carExists(String carId)
     {
-        for(CarDetails car : cars)
-        {
-            if(car.getCarId().equals(carId))
-            {
-                return true;
-            }
-        }
-        return false;
+        return cars.containsKey(carId);
     }
 
     public static CarDetails getCarById(String carId)
     {
-        for(CarDetails car : cars)
-        {
-            if(Objects.equals(car.getCarId(),carId))
-            {
-                return car;
-            }
-        }
-        return null; //As car is not found with passed ID
+        return cars.get(carId);
     }
 
     public static CarDetails isCarAvailable(String carId)

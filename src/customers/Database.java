@@ -14,7 +14,7 @@ public class Database
     {
         //Logic to check : is username unique or not
 
-        if (Database.exist(username))
+        if (exist(username))
         {
             return false;
         }
